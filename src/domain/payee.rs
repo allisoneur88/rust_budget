@@ -1,5 +1,7 @@
+use uuid::Uuid;
+
 #[derive(Debug)]
 pub struct Payee {
-    pub id: u64,
+    pub id: Uuid,
     pub name: String,
 }

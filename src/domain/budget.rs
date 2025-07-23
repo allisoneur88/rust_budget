@@ -1,3 +1,5 @@
+use uuid::Uuid;
+
 use super::{
     account::Account, currency::Currency, super_category::SuperCategory,
     super_transaction::SuperTransaction,
@@ -5,7 +7,7 @@ use super::{
 
 #[derive(Debug)]
 pub struct Budget {
-    pub id: u64,
+    pub id: Uuid,
     pub accounts: Option<Vec<Account>>,
     pub super_categories: Option<Vec<SuperCategory>>,
     pub super_transactions: Option<Vec<SuperTransaction>>,

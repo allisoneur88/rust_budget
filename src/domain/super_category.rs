@@ -1,8 +1,10 @@
+use uuid::Uuid;
+
 use super::category::Category;
 
 #[derive(Debug)]
 pub struct SuperCategory {
-    pub id: u64,
+    pub id: Uuid,
     pub name: String,
     pub categories: Vec<Category>,
 }

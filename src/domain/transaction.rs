@@ -1,8 +1,10 @@
+use uuid::Uuid;
+
 use super::currency::Currency;
 
 #[derive(Debug)]
 pub struct Transaction {
-    pub id: u64,
+    pub id: Uuid,
     pub flow: Option<f64>,
     pub currency: Currency,
 
