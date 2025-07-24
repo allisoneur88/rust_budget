@@ -6,5 +6,5 @@ use super::category::Category;
 pub struct SuperCategory {
     pub id: Uuid,
     pub name: String,
-    pub categories: Vec<Category>,
+    pub categories: Option<Vec<Category>>,
 }

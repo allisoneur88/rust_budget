@@ -5,12 +5,13 @@ use super::currency::Currency;
 #[derive(Debug)]
 pub struct Transaction {
     pub id: Uuid,
-    pub flow: Option<f64>,
+    pub flow: f64, // negative for outflow, positive for inflow
     pub currency: Currency,
+    pub memo: String,
 
     //Foreign keys
-    pub account_id: u64,
-    pub category_id: u64,
-    pub super_transaction_id: u64,
-    pub payee_id: u64,
+    pub account_id: Uuid,
+    pub category_id: Uuid,
+    pub super_transaction_id: Uuid,
+    pub payee_id: Uuid,
 }
