@@ -16,7 +16,6 @@ impl UserService {
             id: IdGenerator::new_id(),
             name: name.to_string(),
             password: None,
-            budgets: None,
         }
     }
 
@@ -25,7 +24,6 @@ impl UserService {
             id: IdGenerator::new_id(),
             name: name.to_string(),
             password: Some(password.to_string()),
-            budgets: None,
         }
     }
 
@@ -35,17 +33,6 @@ impl UserService {
 
     pub fn update_user_password(&self, user: &mut User, new_password: &str) {
         user.password = Some(new_password.to_string());
-    }
-
-    pub fn add_budget(&self, user: &mut User, budget: Budget) {
-        match &mut user.budgets {
-            None => {
-                user.budgets = Some(vec![budget]);
-            }
-            Some(budgets) => {
-                budgets.push(budget);
-            }
-        }
     }
 }
 

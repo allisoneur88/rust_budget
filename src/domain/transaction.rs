@@ -1,8 +1,11 @@
+use std::clone;
+
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use super::currency::Currency;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
 pub struct Transaction {
     pub id: Uuid,
     pub flow: f64, // negative for outflow, positive for inflow

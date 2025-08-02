@@ -1,10 +1,7 @@
-use crate::Account;
 use crate::Budget;
 use crate::Currency;
 use crate::IdGenerator;
-use crate::SuperCategory;
-use crate::SuperTransaction;
-use crate::domain::super_transaction;
+use crate::User;
 
 #[derive(Debug)]
 pub struct BudgetService;
@@ -14,14 +11,12 @@ impl BudgetService {
         Self
     }
 
-    pub fn make_budget(&self, name: &str, main_currency: Currency) -> Budget {
+    pub fn make_budget(&self, name: &str, main_currency: Currency, user: &User) -> Budget {
         Budget {
             id: IdGenerator::new_id(),
             name: name.to_string(),
-            accounts: None,
-            super_categories: None,
-            super_transactions: None,
             main_currency: main_currency,
+            user_id: user.id,
         }
     }
 
@@ -32,25 +27,22 @@ impl BudgetService {
     pub fn change_main_currency(&self, budget: &mut Budget, new_currency: Currency) {
         budget.main_currency = new_currency;
     }
+}
 
-    pub fn add_account(&self, budget: &mut Budget, account: Account) {
-        match &mut budget.accounts {
-            None => budget.accounts = Some(vec![account]),
-            Some(accounts) => accounts.push(account),
-        }
-    }
+#[cfg(test)]
+mod tests {
+    use crate::{
+        Currency, services::budget_service::BudgetService, services::user_service::UserService,
+    };
 
-    pub fn add_super_category(&self, budget: &mut Budget, super_category: SuperCategory) {
-        match &mut budget.super_categories {
-            None => budget.super_categories = Some(vec![super_category]),
-            Some(super_categories) => super_categories.push(super_category),
-        }
-    }
+    #[test]
+    pub fn creates_budget() {
+        let us = UserService::new();
+        let user = us.make_user_wo_password("Sasha");
 
-    pub fn add_super_transaction(&self, budget: &mut Budget, super_transaction: SuperTransaction) {
-        match &mut budget.super_transactions {
-            None => budget.super_transactions = Some(vec![super_transaction]),
-            Some(super_transactions) => super_transactions.push(super_transaction),
-        }
+        let bs = BudgetService::new();
+        let budget = bs.make_budget("main budet", Currency::Roubles, &user);
+
+        assert_eq!(budget.user_id, user.id);
     }
 }

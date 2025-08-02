@@ -1,5 +1,6 @@
 pub mod account;
 pub mod account_type;
+pub mod assignment;
 pub mod budget;
 pub mod category;
 pub mod currency;

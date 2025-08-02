@@ -8,26 +8,6 @@ impl TransactonService {
         Self
     }
 
-    pub fn make_transaction_wo_memo(
-        &self,
-        flow: f64,
-        account: &Account,
-        category: &Category,
-        super_transaction: &SuperTransaction,
-        payee: &Payee,
-    ) -> Transaction {
-        Transaction {
-            id: IdGenerator::new_id(),
-            flow,
-            currency: account.currency.clone(),
-            memo: "".to_string(),
-            account_id: account.id,
-            category_id: category.id,
-            super_transaction_id: super_transaction.id,
-            payee_id: payee.id,
-        }
-    }
-
     pub fn make_transaction(
         &self,
         flow: f64,
@@ -85,7 +65,7 @@ mod tests {
 
     use crate::{
         AccountType, Currency,
-        domain::super_transaction,
+        domain::{category, super_category, super_transaction},
         services::{
             account_service::AccountService, budget_service::BudgetService,
             category_service::CategoryService, payee_service::PayeeService,
@@ -98,51 +78,41 @@ mod tests {
     #[test]
     pub fn create_everything_using_services() {
         let us = UserService::new();
-        let mut user = us.make_user_wo_password("Sasha");
+        let user = us.make_user_wo_password("sasha");
 
         let bs = BudgetService::new();
-        let mut budget = bs.make_budget("Family", Currency::Roubles);
+        let budget = bs.make_budget("budget", Currency::Roubles, &user);
 
-        let aserv = AccountService::new();
-        let mut account =
-            aserv.make_account("Sber", false, AccountType::Checking, Currency::Roubles);
-
-        let scs = SuperCategoryService::new();
-        let mut super_category = scs.make_super_category("Bills");
-
-        let sts = SuperTransactionService::new();
-        let mut super_transaction = sts.make_super_transaction(
-            NaiveDate::from_ymd_opt(2025, 07, 24).unwrap(),
-            "July Electricity",
+        let accs = AccountService::new();
+        let account = accs.make_account(
+            "sber",
+            false,
+            AccountType::Checking,
+            Currency::Roubles,
+            &budget,
         );
 
+        let sts = SuperTransactionService::new();
+        let super_transaction =
+            sts.make_super_transaction(NaiveDate::from_ymd_opt(2025, 8, 25).unwrap(), "", &budget);
+
+        let scs = SuperCategoryService::new();
+        let super_category = scs.make_super_category("bills", &budget);
+
         let cs = CategoryService::new();
-        let category = cs.make_category("Electricity");
+        let category = cs.make_category("groceries", &super_category);
 
         let ps = PayeeService::new();
-        let payee = ps.make_payee("MosGorElek");
+        let payee = ps.make_payee("Spar", "");
 
         let ts = TransactonService::new();
-        let my_transaction =
-            ts.make_transaction_wo_memo(-54.32, &account, &category, &super_transaction, &payee);
-
-        sts.add_transaction(&mut super_transaction, my_transaction);
-        scs.add_category(&mut super_category, category);
-        bs.add_account(&mut budget, account);
-        bs.add_super_category(&mut budget, super_category);
-        bs.add_super_transaction(&mut budget, super_transaction);
-        us.add_budget(&mut user, budget);
-
-        assert_eq!(
-            user.budgets.as_mut().unwrap()[0]
-                .super_transactions
-                .as_mut()
-                .unwrap()[0]
-                .transactions
-                .as_mut()
-                .unwrap()[0]
-                .flow,
-            -54.32
+        let transaction = ts.make_transaction(
+            -320.2,
+            "spar",
+            &account,
+            &category,
+            &super_transaction,
+            &payee,
         );
     }
 }

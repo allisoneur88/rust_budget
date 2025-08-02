@@ -1,10 +1,9 @@
-use super::budget::Budget;
+use serde::{self, Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
 pub struct User {
     pub id: Uuid,
     pub name: String,
     pub password: Option<String>,
-    pub budgets: Option<Vec<Budget>>,
 }

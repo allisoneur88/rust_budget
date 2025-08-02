@@ -1,16 +1,13 @@
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use super::{
-    account::Account, currency::Currency, super_category::SuperCategory,
-    super_transaction::SuperTransaction,
-};
+use super::currency::Currency;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
 pub struct Budget {
     pub id: Uuid,
     pub name: String,
-    pub accounts: Option<Vec<Account>>,
-    pub super_categories: Option<Vec<SuperCategory>>,
-    pub super_transactions: Option<Vec<SuperTransaction>>,
     pub main_currency: Currency,
+
+    pub user_id: Uuid,
 }

@@ -1,10 +1,12 @@
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use super::category::Category;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, PartialOrd, Clone, Serialize, Deserialize)]
 pub struct SuperCategory {
     pub id: Uuid,
     pub name: String,
-    pub categories: Option<Vec<Category>>,
+
+    pub budget_id: Uuid,
 }

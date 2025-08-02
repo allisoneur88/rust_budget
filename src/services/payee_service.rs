@@ -8,10 +8,11 @@ impl PayeeService {
         Self
     }
 
-    pub fn make_payee(&self, name: &str) -> Payee {
+    pub fn make_payee(&self, name: &str, memo: &str) -> Payee {
         Payee {
             id: IdGenerator::new_id(),
             name: name.to_string(),
+            memo: memo.to_string(),
         }
     }
 
