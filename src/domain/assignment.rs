@@ -1,7 +1,8 @@
 use chrono::NaiveDate;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Debug, Clone, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct Assignment {
     pub id: Uuid,
     pub amount: f64,
@@ -10,7 +11,7 @@ pub struct Assignment {
     pub category_id: Uuid,
 }
 
-#[derive(Debug, Clone, PartialEq, PartialOrd)]
+#[derive(Debug, Clone, PartialEq, PartialOrd, Serialize, Deserialize)]
 pub struct YearMonth(NaiveDate);
 
 impl YearMonth {
