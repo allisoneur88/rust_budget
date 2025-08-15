@@ -1,0 +1,48 @@
+use crate::{
+    User,
+    repository::traits::{CategoryRepository, UserRepository},
+};
+
+pub struct FileUserRepo {
+    pub path: String,
+    pub data: Vec<User>,
+}
+
+impl FileUserRepo {
+    pub fn new(path: String) -> Self {
+        let data = std::fs::read_to_string(&path)
+            .ok()
+            .and_then(|s| serde_json::from_str(&s).ok())
+            .unwrap_or_default();
+
+        Self { path, data }
+    }
+
+    pub fn persist(&self) {
+        let _ = std::fs::write(
+            &self.path,
+            serde_json::to_string_pretty(&self.data).unwrap(),
+        );
+    }
+}
+
+impl UserRepository for FileUserRepo {
+    fn list(&self) -> Vec<User> {
+        self.data.clone()
+    }
+
+    fn get(&self, id: uuid::Uuid) -> Option<User> {
+        self.data.iter().cloned().find(|u| u.id == id)
+    }
+
+    fn save(&mut self, user: User) {
+        if let Some(existing) = self.data.iter_mut().find(|u| u.id == user.id) {
+            *existing = user;
+        }
+        self.persist();
+    }
+    fn delete(&mut self, id: uuid::Uuid) {
+        self.data.retain(|u| u.id != id);
+        self.persist();
+    }
+}
