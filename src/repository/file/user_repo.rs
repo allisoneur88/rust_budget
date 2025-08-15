@@ -1,6 +1,9 @@
 use crate::{
     User,
-    repository::traits::{CategoryRepository, UserRepository},
+    repository::{
+        file::file_helper::FileHelper,
+        traits::{CategoryRepository, UserRepository},
+    },
 };
 
 pub struct FileUserRepo {
@@ -19,10 +22,7 @@ impl FileUserRepo {
     }
 
     pub fn persist(&self) {
-        let _ = std::fs::write(
-            &self.path,
-            serde_json::to_string_pretty(&self.data).unwrap(),
-        );
+        FileHelper::save_to_file(&self.path, &self.data);
     }
 }
 
@@ -38,7 +38,10 @@ impl UserRepository for FileUserRepo {
     fn save(&mut self, user: User) {
         if let Some(existing) = self.data.iter_mut().find(|u| u.id == user.id) {
             *existing = user;
+        } else {
+            self.data.push(user);
         }
+
         self.persist();
     }
     fn delete(&mut self, id: uuid::Uuid) {
