@@ -81,16 +81,11 @@ mod tests {
         let user = us.make_user_wo_password("sasha");
 
         let bs = BudgetService::new();
-        let budget = bs.make_budget("budget", Currency::Roubles, &user);
+        let budget = bs.make_budget("budget", Currency::RUB, &user);
 
         let accs = AccountService::new();
-        let account = accs.make_account(
-            "sber",
-            false,
-            AccountType::Checking,
-            Currency::Roubles,
-            &budget,
-        );
+        let account =
+            accs.make_account("sber", false, AccountType::Checking, Currency::RUB, &budget);
 
         let sts = SuperTransactionService::new();
         let super_transaction =

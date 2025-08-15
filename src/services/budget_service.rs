@@ -41,7 +41,7 @@ mod tests {
         let user = us.make_user_wo_password("Sasha");
 
         let bs = BudgetService::new();
-        let budget = bs.make_budget("main budet", Currency::Roubles, &user);
+        let budget = bs.make_budget("main budet", Currency::RUB, &user);
 
         assert_eq!(budget.user_id, user.id);
     }

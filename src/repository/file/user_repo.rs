@@ -1,14 +1,11 @@
 use crate::{
     User,
-    repository::{
-        file::file_helper::FileHelper,
-        traits::{CategoryRepository, UserRepository},
-    },
+    repository::{file::file_helper::FileHelper, traits::UserRepository},
 };
 
 pub struct FileUserRepo {
-    pub path: String,
-    pub data: Vec<User>,
+    path: String,
+    data: Vec<User>,
 }
 
 impl FileUserRepo {
@@ -22,7 +19,7 @@ impl FileUserRepo {
     }
 
     pub fn persist(&self) {
-        FileHelper::save_to_file(&self.path, &self.data);
+        let _ = FileHelper::save_to_file(&self.path, &self.data);
     }
 }
 

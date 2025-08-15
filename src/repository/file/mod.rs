@@ -1,3 +1,10 @@
 pub mod account_repo;
+pub mod assignment_repo;
+pub mod budget_repo;
+pub mod category_repo;
 pub mod file_helper;
+pub mod payee_repo;
+pub mod super_category_repo;
+pub mod super_transaction_repo;
+pub mod transaction_repo;
 pub mod user_repo;
