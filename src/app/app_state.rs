@@ -1,6 +1,5 @@
 use crate::{
-    Account, AccountType, Assignment, Budget, Category, Currency, SuperCategory, SuperTransaction,
-    Transaction,
+    AccountType, Currency,
     repository::traits::{
         AccountRepository, AssignmentRepository, BudgetRepository, CategoryRepository,
         SuperCategoryRepository, SuperTransactionRepository, TransactionRepository, UserRepository,
