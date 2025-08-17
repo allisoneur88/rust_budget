@@ -1,5 +1,5 @@
 use crate::{
-    AccountType, Currency,
+    AccountType,
     app::app_config::AppConfig,
     repository::{
         file::{

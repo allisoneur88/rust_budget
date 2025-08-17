@@ -64,8 +64,7 @@ mod tests {
     use chrono::NaiveDate;
 
     use crate::{
-        AccountType, Currency,
-        domain::{category, super_category, super_transaction},
+        AccountType,
         services::{
             account_service::AccountService, budget_service::BudgetService,
             category_service::CategoryService, currency_service::CurrencyService,
@@ -108,7 +107,7 @@ mod tests {
         let payee = ps.make_payee("Spar", "");
 
         let ts = TransactonService::new();
-        let transaction = ts.make_transaction(
+        let _transaction = ts.make_transaction(
             -320.2,
             "spar",
             &account,

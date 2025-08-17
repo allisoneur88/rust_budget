@@ -1,4 +1,4 @@
-use crate::{Budget, Category, IdGenerator, SuperCategory, domain::super_category};
+use crate::{Budget, IdGenerator, SuperCategory};
 
 #[derive(Debug)]
 pub struct SuperCategoryService;

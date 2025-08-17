@@ -43,6 +43,7 @@ impl UserRepository for FileUserRepo {
 
         self.persist();
     }
+
     fn delete(&mut self, id: uuid::Uuid) {
         self.data.retain(|u| u.id != id);
         self.persist();

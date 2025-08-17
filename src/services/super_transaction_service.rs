@@ -1,6 +1,6 @@
 use chrono::NaiveDate;
 
-use crate::{Budget, IdGenerator, SuperTransaction, Transaction, domain::super_transaction};
+use crate::{Budget, IdGenerator, SuperTransaction};
 
 #[derive(Debug)]
 pub struct SuperTransactionService;

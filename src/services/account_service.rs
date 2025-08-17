@@ -1,4 +1,4 @@
-use crate::{Account, AccountType, Budget, Currency, IdGenerator, domain::currency};
+use crate::{Account, AccountType, Budget, Currency, IdGenerator};
 
 #[derive(Debug)]
 pub struct AccountService;
@@ -42,7 +42,7 @@ impl AccountService {
 #[cfg(test)]
 mod tests {
     use crate::{
-        AccountType, Currency,
+        AccountType,
         services::{
             account_service::AccountService, budget_service::BudgetService,
             currency_service::CurrencyService, user_service::UserService,

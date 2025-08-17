@@ -1,20 +1,19 @@
 #![allow(dead_code, unused_variables)]
 
-use budget::IdGenerator;
-use chrono::NaiveDate;
-
-mod domain;
-
-use domain::{
-    account::Account, account_type::AccountType, budget::Budget, category::Category,
-    currency::Currency, payee::Payee, super_category::SuperCategory,
-    super_transaction::SuperTransaction, transaction::Transaction, user::User,
-};
-
-mod services;
+use budget::app::app::App;
 
 fn main() {
-    test_manual();
-}
+    let mut app = App::new();
 
-fn test_manual() {}
+    let users = app.users.get_all();
+    let sasha = users
+        .into_iter()
+        .find(|u| u.name == String::from("Sasha"))
+        .unwrap();
+
+    app.users.update_password(sasha, "321");
+
+    let users = app.users.get_all();
+
+    println!("{:#?}", users);
+}

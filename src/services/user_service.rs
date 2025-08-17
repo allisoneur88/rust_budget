@@ -1,5 +1,3 @@
-use crate::Budget;
-
 use super::super::IdGenerator;
 use super::super::User;
 
@@ -38,8 +36,6 @@ impl UserService {
 
 #[cfg(test)]
 mod tests {
-    use crate::services::user_service;
-
     use super::*;
 
     #[test]
