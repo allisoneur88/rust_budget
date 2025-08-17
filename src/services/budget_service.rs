@@ -31,8 +31,8 @@ impl BudgetService {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        Currency, services::budget_service::BudgetService, services::user_service::UserService,
+    use crate::services::{
+        budget_service::BudgetService, currency_service::CurrencyService, user_service::UserService,
     };
 
     #[test]
@@ -41,7 +41,8 @@ mod tests {
         let user = us.make_user_wo_password("Sasha");
 
         let bs = BudgetService::new();
-        let budget = bs.make_budget("main budet", Currency::RUB, &user);
+        let cs = CurrencyService::new();
+        let budget = bs.make_budget("main budet", cs.make_currency("RUB", "R", "Roubles"), &user);
 
         assert_eq!(budget.user_id, user.id);
     }

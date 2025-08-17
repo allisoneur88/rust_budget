@@ -45,7 +45,7 @@ mod tests {
         AccountType, Currency,
         services::{
             account_service::AccountService, budget_service::BudgetService,
-            user_service::UserService,
+            currency_service::CurrencyService, user_service::UserService,
         },
     };
 
@@ -55,11 +55,18 @@ mod tests {
         let user = us.make_user_wo_password("sasha");
 
         let bs = BudgetService::new();
-        let budget = bs.make_budget("main budget", Currency::RUB, &user);
+        let cs = CurrencyService::new();
+        let currency = cs.make_currency("RUB", "R", "Roubles");
+        let budget = bs.make_budget("main budget", currency.clone(), &user);
 
         let accs = AccountService::new();
-        let account =
-            accs.make_account("sber", false, AccountType::Checking, Currency::RUB, &budget);
+        let account = accs.make_account(
+            "sber",
+            false,
+            AccountType::Checking,
+            currency.clone(),
+            &budget,
+        );
 
         assert_eq!(account.budget_id, budget.id)
     }

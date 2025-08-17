@@ -68,8 +68,8 @@ mod tests {
         domain::{category, super_category, super_transaction},
         services::{
             account_service::AccountService, budget_service::BudgetService,
-            category_service::CategoryService, payee_service::PayeeService,
-            super_category_service::SuperCategoryService,
+            category_service::CategoryService, currency_service::CurrencyService,
+            payee_service::PayeeService, super_category_service::SuperCategoryService,
             super_transaction_service::SuperTransactionService, user_service::UserService,
         },
     };
@@ -81,11 +81,18 @@ mod tests {
         let user = us.make_user_wo_password("sasha");
 
         let bs = BudgetService::new();
-        let budget = bs.make_budget("budget", Currency::RUB, &user);
+        let cs = CurrencyService::new();
+        let currency = cs.make_currency("RUB", "R", "Roubles");
+        let budget = bs.make_budget("budget", currency.clone(), &user);
 
         let accs = AccountService::new();
-        let account =
-            accs.make_account("sber", false, AccountType::Checking, Currency::RUB, &budget);
+        let account = accs.make_account(
+            "sber",
+            false,
+            AccountType::Checking,
+            currency.clone(),
+            &budget,
+        );
 
         let sts = SuperTransactionService::new();
         let super_transaction =

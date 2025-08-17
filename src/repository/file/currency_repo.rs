@@ -1,16 +1,16 @@
 use std::path::PathBuf;
 
 use crate::{
-    Category,
-    repository::{file::file_helper::FileHelper, traits::CategoryRepository},
+    Currency,
+    repository::{file::file_helper::FileHelper, traits::CurrencyRepository},
 };
 
-pub struct FileCategoryRepo {
+pub struct FileCurrencyRepo {
     path: PathBuf,
-    data: Vec<Category>,
+    data: Vec<Currency>,
 }
 
-impl FileCategoryRepo {
+impl FileCurrencyRepo {
     pub fn new(path: PathBuf) -> Self {
         let data = std::fs::read_to_string(&path)
             .ok()
@@ -25,20 +25,20 @@ impl FileCategoryRepo {
     }
 }
 
-impl CategoryRepository for FileCategoryRepo {
-    fn list(&self) -> Vec<Category> {
+impl CurrencyRepository for FileCurrencyRepo {
+    fn list(&self) -> Vec<Currency> {
         self.data.clone()
     }
 
-    fn get(&self, id: uuid::Uuid) -> Option<Category> {
+    fn get(&self, id: uuid::Uuid) -> Option<Currency> {
         self.data.iter().cloned().find(|c| c.id == id)
     }
 
-    fn save(&mut self, category: Category) {
-        if let Some(existing) = self.data.iter_mut().find(|c| c.id == category.id) {
-            *existing = category;
+    fn save(&mut self, currency: Currency) {
+        if let Some(existing) = self.data.iter_mut().find(|c| c.id == currency.id) {
+            *existing = currency;
         } else {
-            self.data.push(category);
+            self.data.push(currency);
         }
 
         self.persist();

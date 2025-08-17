@@ -1,15 +1,17 @@
+use std::path::PathBuf;
+
 use crate::{
     Budget,
     repository::{file::file_helper::FileHelper, traits::BudgetRepository},
 };
 
 pub struct FileBudgetRepo {
-    path: String,
+    path: PathBuf,
     data: Vec<Budget>,
 }
 
 impl FileBudgetRepo {
-    pub fn new(path: String) -> Self {
+    pub fn new(path: PathBuf) -> Self {
         let data = std::fs::read_to_string(&path)
             .ok()
             .and_then(|s| serde_json::from_str(&s).ok())

@@ -1,4 +1,5 @@
 pub mod app;
+pub mod controllers;
 pub mod domain;
 pub mod repository;
 pub mod services;

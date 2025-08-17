@@ -1,8 +1,8 @@
 use uuid::Uuid;
 
 use crate::{
-    Account, Assignment, Budget, Category, Payee, SuperCategory, SuperTransaction, Transaction,
-    User,
+    Account, Assignment, Budget, Category, Currency, Payee, SuperCategory, SuperTransaction,
+    Transaction, User,
 };
 
 pub trait UserRepository {
@@ -65,5 +65,12 @@ pub trait PayeeRepository {
     fn list(&self) -> Vec<Payee>;
     fn get(&self, id: Uuid) -> Option<Payee>;
     fn save(&mut self, payee: Payee);
+    fn delete(&mut self, id: Uuid);
+}
+
+pub trait CurrencyRepository {
+    fn list(&self) -> Vec<Currency>;
+    fn get(&self, id: Uuid) -> Option<Currency>;
+    fn save(&mut self, currency: Currency);
     fn delete(&mut self, id: Uuid);
 }
