@@ -1,1 +1,10 @@
+pub mod account_controller;
+pub mod assignment_controller;
+pub mod budget_controller;
+pub mod category_controller;
+pub mod currency_controller;
+pub mod payee_controller;
+pub mod super_category_controller;
+pub mod super_transaction_controller;
+pub mod transaction_controller;
 pub mod user_controller;
