@@ -21,7 +21,7 @@ pub struct AppState {
     pub version: u32,
     pub users: Box<dyn UserRepository>,
     pub budgets: Box<dyn BudgetRepository>,
-    pub account: Box<dyn AccountRepository>,
+    pub accounts: Box<dyn AccountRepository>,
     pub super_categories: Box<dyn SuperCategoryRepository>,
     pub super_transactions: Box<dyn SuperTransactionRepository>,
     pub categories: Box<dyn CategoryRepository>,
