@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use crate::{
-    SuperCategory,
+    Budget, SuperCategory,
     repository::{file::file_helper::FileHelper, traits::SuperCategoryRepository},
 };
 
@@ -26,12 +26,16 @@ impl FileSuperCategoryRepo {
 }
 
 impl SuperCategoryRepository for FileSuperCategoryRepo {
-    fn list(&self) -> Vec<SuperCategory> {
-        self.data.clone()
+    fn list(&self, budget: &Budget) -> Vec<SuperCategory> {
+        let mut data = self.data.clone();
+        data.retain(|sc| sc.budget_id == budget.id);
+        data
     }
 
-    fn get(&self, id: uuid::Uuid) -> Option<SuperCategory> {
-        self.data.iter().cloned().find(|sc| sc.id == id)
+    fn get(&self, budget: &Budget, id: uuid::Uuid) -> Option<SuperCategory> {
+        let mut data = self.data.clone();
+        data.retain(|sc| sc.budget_id == budget.id);
+        data.iter().cloned().find(|sc| sc.id == id)
     }
 
     fn save(&mut self, super_category: SuperCategory) {

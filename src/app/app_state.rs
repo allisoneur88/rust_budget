@@ -1,5 +1,5 @@
 use crate::{
-    AccountType,
+    Account, AccountType, Budget, User,
     app::app_config::AppConfig,
     repository::{
         file::{
@@ -29,6 +29,10 @@ pub struct AppState {
     pub assignments: Box<dyn AssignmentRepository>,
     pub currencies: Box<dyn CurrencyRepository>,
     pub account_types: Vec<AccountType>,
+
+    pub current_user: Option<User>,
+    pub current_budget: Option<Budget>,
+    pub current_account: Option<Account>,
 }
 
 impl AppState {
@@ -53,6 +57,10 @@ impl AppState {
                 AccountType::CreditCard,
                 AccountType::Investment,
             ],
+
+            current_user: None,
+            current_budget: None,
+            current_account: None,
         }
     }
 }

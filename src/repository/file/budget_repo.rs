@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use crate::{
-    Budget,
+    Budget, User,
     repository::{file::file_helper::FileHelper, traits::BudgetRepository},
 };
 
@@ -26,12 +26,16 @@ impl FileBudgetRepo {
 }
 
 impl BudgetRepository for FileBudgetRepo {
-    fn list(&self) -> Vec<Budget> {
-        self.data.clone()
+    fn list(&self, user: &User) -> Vec<Budget> {
+        let mut data = self.data.clone();
+        data.retain(|b| b.user_id == user.id);
+        data
     }
 
-    fn get(&self, id: uuid::Uuid) -> Option<Budget> {
-        self.data.iter().cloned().find(|b| b.id == id)
+    fn get(&self, user: &User, id: uuid::Uuid) -> Option<Budget> {
+        let mut data = self.data.clone();
+        data.retain(|b| b.user_id == user.id);
+        data.iter().cloned().find(|b| b.id == id)
     }
 
     fn save(&mut self, budget: Budget) {

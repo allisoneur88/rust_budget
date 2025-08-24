@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use crate::{
-    SuperTransaction,
+    Budget, SuperTransaction,
     repository::{file::file_helper::FileHelper, traits::SuperTransactionRepository},
 };
 
@@ -26,12 +26,16 @@ impl FileSuperTransactionRepo {
 }
 
 impl SuperTransactionRepository for FileSuperTransactionRepo {
-    fn list(&self) -> Vec<SuperTransaction> {
-        self.data.clone()
+    fn list(&self, budget: &Budget) -> Vec<SuperTransaction> {
+        let mut data = self.data.clone();
+        data.retain(|st| st.budget_id == budget.id);
+        data
     }
 
-    fn get(&self, id: uuid::Uuid) -> Option<SuperTransaction> {
-        self.data.iter().cloned().find(|st| st.id == id)
+    fn get(&self, budget: &Budget, id: uuid::Uuid) -> Option<SuperTransaction> {
+        let mut data = self.data.clone();
+        data.retain(|st| st.budget_id == budget.id);
+        data.iter().cloned().find(|st| st.id == id)
     }
 
     fn save(&mut self, super_transaction: SuperTransaction) {

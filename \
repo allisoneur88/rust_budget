@@ -59,6 +59,8 @@ impl SuperCategoryController {
     }
 
     pub fn delete(&self, id: Uuid) {
+        let mut super_category = self.get_by_id(id).unwrap();
+
         self.app_state.borrow_mut().super_categories.delete(id);
     }
 }
