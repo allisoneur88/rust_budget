@@ -43,7 +43,7 @@ impl AppState {
             version: 1,
             users: Box::new(FileUserRepo::new(config.user_path)),
             budgets: Box::new(FileBudgetRepo::new(config.budget_path)),
-            account: Box::new(FileAccountRepo::new(config.account_path)),
+            accounts: Box::new(FileAccountRepo::new(config.account_path)),
             super_categories: Box::new(FileSuperCategoryRepo::new(config.super_category_path)),
             super_transactions: Box::new(FileSuperTransactionRepo::new(
                 config.super_transaction_path,
