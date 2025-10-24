@@ -35,7 +35,7 @@ impl BudgetRepository for FileBudgetRepo {
     fn get(&self, user: &User, id: uuid::Uuid) -> Option<Budget> {
         let mut data = self.data.clone();
         data.retain(|b| b.user_id == user.id);
-        data.iter().cloned().find(|b| b.id == id)
+        data.iter().find(|&b| b.id == id).cloned()
     }
 
     fn save(&mut self, budget: Budget) {

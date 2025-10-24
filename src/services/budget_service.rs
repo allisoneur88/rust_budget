@@ -15,7 +15,7 @@ impl BudgetService {
         Budget {
             id: IdGenerator::new_id(),
             name: name.to_string(),
-            main_currency: main_currency,
+            main_currency,
             user_id: user.id,
         }
     }

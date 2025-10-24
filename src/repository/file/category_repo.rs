@@ -31,7 +31,7 @@ impl CategoryRepository for FileCategoryRepo {
     }
 
     fn get(&self, id: uuid::Uuid) -> Option<Category> {
-        self.data.iter().cloned().find(|c| c.id == id)
+        self.data.iter().find(|&c| c.id == id).cloned()
     }
 
     fn save(&mut self, category: Category) {

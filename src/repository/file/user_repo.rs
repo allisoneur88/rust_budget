@@ -31,7 +31,7 @@ impl UserRepository for FileUserRepo {
     }
 
     fn get(&self, id: uuid::Uuid) -> Option<User> {
-        self.data.iter().cloned().find(|u| u.id == id)
+        self.data.iter().find(|&u| u.id == id).cloned()
     }
 
     fn save(&mut self, user: User) {

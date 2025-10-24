@@ -18,7 +18,7 @@ impl SuperTransactionService {
     ) -> SuperTransaction {
         SuperTransaction {
             id: IdGenerator::new_id(),
-            date: date,
+            date,
             memo: memo.to_string(),
             budget_id: budget.id,
         }

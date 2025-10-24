@@ -35,7 +35,7 @@ impl AccountRepository for FileAccountRepo {
     fn get(&self, budget: &Budget, id: uuid::Uuid) -> Option<Account> {
         let mut data = self.data.clone();
         data.retain(|a| a.budget_id == budget.id);
-        data.iter().cloned().find(|a| a.id == id)
+        data.iter().find(|&a| a.id == id).cloned()
     }
 
     fn save(&mut self, account: Account) {

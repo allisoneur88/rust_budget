@@ -31,7 +31,7 @@ impl TransactionRepository for FileTransactionRepo {
     }
 
     fn get(&self, id: uuid::Uuid) -> Option<Transaction> {
-        self.data.iter().cloned().find(|t| t.id == id)
+        self.data.iter().find(|&t| t.id == id).cloned()
     }
 
     fn save(&mut self, transaction: Transaction) {

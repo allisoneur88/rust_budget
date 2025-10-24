@@ -31,7 +31,7 @@ impl CurrencyRepository for FileCurrencyRepo {
     }
 
     fn get(&self, id: uuid::Uuid) -> Option<Currency> {
-        self.data.iter().cloned().find(|c| c.id == id)
+        self.data.iter().find(|&c| c.id == id).cloned()
     }
 
     fn save(&mut self, currency: Currency) {

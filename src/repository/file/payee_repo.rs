@@ -31,7 +31,7 @@ impl PayeeRepository for FilePayeeRepo {
     }
 
     fn get(&self, id: uuid::Uuid) -> Option<Payee> {
-        self.data.iter().cloned().find(|p| p.id == id)
+        self.data.iter().find(|&p| p.id == id).cloned()
     }
 
     fn save(&mut self, payee: Payee) {

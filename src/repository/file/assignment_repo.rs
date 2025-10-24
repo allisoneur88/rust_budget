@@ -31,7 +31,7 @@ impl AssignmentRepository for FileAssignmentRepo {
     }
 
     fn get(&self, id: uuid::Uuid) -> Option<Assignment> {
-        self.data.iter().cloned().find(|a| a.id == id)
+        self.data.iter().find(|&a| a.id == id).cloned()
     }
 
     fn save(&mut self, assignment: Assignment) {

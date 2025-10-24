@@ -19,7 +19,7 @@ impl AccountService {
         Account {
             id: IdGenerator::new_id(),
             name: name.to_string(),
-            is_off_budget: is_off_budget,
+            is_off_budget,
             acc_type,
             currency,
             budget_id: budget.id,

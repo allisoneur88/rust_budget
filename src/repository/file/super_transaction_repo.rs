@@ -35,7 +35,7 @@ impl SuperTransactionRepository for FileSuperTransactionRepo {
     fn get(&self, budget: &Budget, id: uuid::Uuid) -> Option<SuperTransaction> {
         let mut data = self.data.clone();
         data.retain(|st| st.budget_id == budget.id);
-        data.iter().cloned().find(|st| st.id == id)
+        data.iter().find(|&st| st.id == id).cloned()
     }
 
     fn save(&mut self, super_transaction: SuperTransaction) {

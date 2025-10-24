@@ -35,7 +35,7 @@ impl SuperCategoryRepository for FileSuperCategoryRepo {
     fn get(&self, budget: &Budget, id: uuid::Uuid) -> Option<SuperCategory> {
         let mut data = self.data.clone();
         data.retain(|sc| sc.budget_id == budget.id);
-        data.iter().cloned().find(|sc| sc.id == id)
+        data.iter().find(|&sc| sc.id == id).cloned()
     }
 
     fn save(&mut self, super_category: SuperCategory) {
