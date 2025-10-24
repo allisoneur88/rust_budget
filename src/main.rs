@@ -1,3 +1,4 @@
+#![warn(clippy::all, clippy::pedantic)]
 #![allow(dead_code, unused_variables)]
 
 use budget::app::app::App;
