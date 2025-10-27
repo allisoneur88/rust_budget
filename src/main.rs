@@ -11,7 +11,7 @@
 use budget::app::app::App;
 
 fn main() {
-    let mut app = App::new();
+    let app = App::new();
 
     let users = app.users.get_all();
 
