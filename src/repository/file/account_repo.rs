@@ -3,6 +3,7 @@ use std::path::PathBuf;
 use crate::{
     Account, Budget,
     repository::{file::file_helper::FileHelper, traits::AccountRepository},
+    util::error::AppResult,
 };
 
 pub struct FileAccountRepo {
@@ -11,17 +12,19 @@ pub struct FileAccountRepo {
 }
 
 impl FileAccountRepo {
-    pub fn new(path: PathBuf) -> Self {
-        let data = std::fs::read_to_string(&path)
-            .ok()
-            .and_then(|s| serde_json::from_str(&s).ok())
-            .unwrap_or_default();
+    pub fn new(path: PathBuf) -> AppResult<Self> {
+        let data = if path.exists() {
+            let contents = std::fs::read_to_string(&path)?;
+            serde_json::from_str(&contents)?
+        } else {
+            Vec::new()
+        };
 
-        Self { path, data }
+        Ok(Self { path, data })
     }
 
-    pub fn persist(&self) {
-        let _ = FileHelper::save_to_file(&self.path, &self.data);
+    pub fn persist(&self) -> AppResult<()> {
+        FileHelper::save_to_file(&self.path, &self.data)
     }
 }
 
@@ -38,18 +41,18 @@ impl AccountRepository for FileAccountRepo {
         data.iter().find(|&a| a.id == id).cloned()
     }
 
-    fn save(&mut self, account: Account) {
+    fn save(&mut self, account: Account) -> AppResult<()> {
         if let Some(existing) = self.data.iter_mut().find(|a| a.id == account.id) {
             *existing = account;
         } else {
             self.data.push(account);
         }
 
-        self.persist();
+        self.persist()
     }
 
-    fn delete(&mut self, id: uuid::Uuid) {
+    fn delete(&mut self, id: uuid::Uuid) -> AppResult<()> {
         self.data.retain(|a| a.id != id);
-        self.persist();
+        self.persist()
     }
 }
