@@ -11,11 +11,11 @@ impl BudgetService {
         Self
     }
 
-    pub fn make_budget(&self, name: &str, main_currency: Currency, user: &User) -> Budget {
+    pub fn make_budget(&self, name: &str, main_currency: &Currency, user: &User) -> Budget {
         Budget {
             id: IdGenerator::new_id(),
             name: name.to_string(),
-            main_currency,
+            main_currency_id: main_currency.id,
             user_id: user.id,
         }
     }
@@ -24,8 +24,8 @@ impl BudgetService {
         budget.name = new_name.to_string();
     }
 
-    pub fn change_main_currency(&self, budget: &mut Budget, new_currency: Currency) {
-        budget.main_currency = new_currency;
+    pub fn change_main_currency(&self, budget: &mut Budget, new_currency: &Currency) {
+        budget.main_currency_id = new_currency.id;
     }
 }
 
@@ -42,7 +42,11 @@ mod tests {
 
         let bs = BudgetService::new();
         let cs = CurrencyService::new();
-        let budget = bs.make_budget("main budet", cs.make_currency("RUB", "R", "Roubles"), &user);
+        let budget = bs.make_budget(
+            "main budet",
+            &cs.make_currency("RUB", "R", "Roubles"),
+            &user,
+        );
 
         assert_eq!(budget.user_id, user.id);
     }
