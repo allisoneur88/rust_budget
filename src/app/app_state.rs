@@ -15,6 +15,7 @@ use crate::{
             TransactionRepository, UserRepository,
         },
     },
+    util::error::AppResult,
 };
 
 pub struct AppState {
@@ -36,22 +37,22 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn new() -> Self {
+    pub fn new() -> AppResult<Self> {
         let config = AppConfig::load("config.toml").unwrap();
 
-        Self {
+        Ok(Self {
             version: 1,
-            users: Box::new(FileUserRepo::new(config.user_path)),
-            budgets: Box::new(FileBudgetRepo::new(config.budget_path)),
-            accounts: Box::new(FileAccountRepo::new(config.account_path)),
-            super_categories: Box::new(FileSuperCategoryRepo::new(config.super_category_path)),
+            users: Box::new(FileUserRepo::new(config.user_path)?),
+            budgets: Box::new(FileBudgetRepo::new(config.budget_path)?),
+            accounts: Box::new(FileAccountRepo::new(config.account_path)?),
+            super_categories: Box::new(FileSuperCategoryRepo::new(config.super_category_path)?),
             super_transactions: Box::new(FileSuperTransactionRepo::new(
                 config.super_transaction_path,
-            )),
-            categories: Box::new(FileCategoryRepo::new(config.category_path)),
-            transactions: Box::new(FileTransactionRepo::new(config.transaction_path)),
-            assignments: Box::new(FileAssignmentRepo::new(config.assignment_path)),
-            currencies: Box::new(FileCurrencyRepo::new(config.currency_path)),
+            )?),
+            categories: Box::new(FileCategoryRepo::new(config.category_path)?),
+            transactions: Box::new(FileTransactionRepo::new(config.transaction_path)?),
+            assignments: Box::new(FileAssignmentRepo::new(config.assignment_path)?),
+            currencies: Box::new(FileCurrencyRepo::new(config.currency_path)?),
             account_types: vec![
                 AccountType::Checking,
                 AccountType::CreditCard,
@@ -61,6 +62,6 @@ impl AppState {
             current_user: None,
             current_budget: None,
             current_account: None,
-        }
+        })
     }
 }
