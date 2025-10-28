@@ -17,4 +17,18 @@ impl FileHelper {
 
         Ok(())
     }
+
+    pub fn load_from_file<P, T>(path: &P) -> AppResult<T>
+    where
+        P: AsRef<Path>,
+        T: serde::de::DeserializeOwned + Default,
+    {
+        if !path.as_ref().exists() {
+            return Ok(T::default());
+        }
+
+        let contents = fs::read_to_string(path)?;
+        let data = serde_json::from_str(&contents)?;
+        Ok(data)
+    }
 }
