@@ -17,6 +17,9 @@ pub enum AppError {
     #[error("Invalid input: {0}")]
     Validation(String),
 
+    #[error("User with this name already exists:{0}")]
+    UserExists(String),
+
     #[error("Unknown error: {0}")]
     Other(String),
 }

@@ -26,3 +26,12 @@ pub fn require_account<'a>(state: &'a Ref<'a, AppState>) -> AppResult<&'a Accoun
         .as_ref()
         .ok_or_else(|| AppError::Validation("No current account selected".into()))
 }
+
+pub fn username_is_unique<'a>(state: &'a Ref<'a, AppState>, name: &str) -> AppResult<()> {
+    match state.users.list().iter().find(|u| u.name == name) {
+        None => Ok(()),
+        Some(..) => Err(AppError::UserExists(
+            "User with this name already exists".into(),
+        )),
+    }
+}

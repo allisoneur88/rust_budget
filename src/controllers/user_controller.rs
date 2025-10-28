@@ -2,7 +2,14 @@ use std::{cell::RefCell, rc::Rc};
 
 use uuid::Uuid;
 
-use crate::{User, UserService, app::app_state::AppState, util::error::AppResult};
+use crate::{
+    User, UserService,
+    app::app_state::AppState,
+    util::{
+        error::{AppError, AppResult},
+        validators::username_is_unique,
+    },
+};
 
 pub struct UserController {
     user_service: UserService,
@@ -22,19 +29,32 @@ impl UserController {
         Ok(state.users.list())
     }
 
-    pub fn get_by_id(&self, id: Uuid) -> AppResult<Option<User>> {
+    pub fn get_by_id(&self, id: Uuid) -> AppResult<User> {
         let state = self.app_state.borrow();
-        Ok(state.users.get(id))
+        let user = state
+            .users
+            .get(id)
+            .ok_or(AppError::NotFound { entity: "User", id })?;
+        drop(state);
+        Ok(user)
     }
 
-    pub fn create_with_password(&mut self, name: &str, password: &str) -> AppResult<()> {
-        let user = self.user_service.make_user(name, password);
+    pub fn create(&mut self, name: &str, password: Option<&str>) -> AppResult<()> {
+        let state = self.app_state.borrow();
+        username_is_unique(&state, name)?;
+        drop(state);
+        let user = match password {
+            Some(p) => self.user_service.make_user(name, p),
+            None => self.user_service.make_user_wo_password(name),
+        };
         self.app_state.borrow_mut().users.save(user)
+    }
+    pub fn create_with_password(&mut self, name: &str, password: &str) -> AppResult<()> {
+        self.create(name, Some(password))
     }
 
     pub fn create_without_password(&mut self, name: &str) -> AppResult<()> {
-        let user = self.user_service.make_user_wo_password(name);
-        self.app_state.borrow_mut().users.save(user)
+        self.create(name, None)
     }
 
     pub fn update_name(&mut self, user: User, new_name: &str) -> AppResult<()> {
