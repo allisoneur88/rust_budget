@@ -10,6 +10,7 @@ use crate::{
         super_transaction_controller::SuperTransactionController,
         transaction_controller::TransactionController, user_controller::UserController,
     },
+    util::error::AppResult,
 };
 
 pub struct App {
@@ -27,8 +28,8 @@ pub struct App {
 }
 
 impl App {
-    pub fn new() -> Self {
-        let app_state = Rc::new(RefCell::new(AppState::new()));
+    pub fn new() -> AppResult<Self> {
+        let app_state = Rc::new(RefCell::new(AppState::new()?));
 
         let users = UserController::new(app_state.clone());
         let budgets = BudgetController::new(app_state.clone());
@@ -41,7 +42,7 @@ impl App {
         let assignments = AssignmentController::new(app_state.clone());
         let currencies = CurrencyController::new(app_state.clone());
 
-        Self {
+        Ok(Self {
             app_state,
             users,
             budgets,
@@ -53,6 +54,6 @@ impl App {
             payees,
             assignments,
             currencies,
-        }
+        })
     }
 }
