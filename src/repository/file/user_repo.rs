@@ -13,13 +13,7 @@ pub struct FileUserRepo {
 
 impl FileUserRepo {
     pub fn new(path: PathBuf) -> AppResult<Self> {
-        let data = if path.exists() {
-            let content = std::fs::read_to_string(&path)?;
-            serde_json::from_str(&content)?
-        } else {
-            Vec::new()
-        };
-
+        let data = FileHelper::load_from_file(&path)?;
         Ok(Self { path, data })
     }
 
