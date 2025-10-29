@@ -1,5 +1,7 @@
 use std::path::PathBuf;
 
+use uuid::Uuid;
+
 use crate::{
     User,
     repository::{file::file_helper::FileHelper, traits::UserRepository},
@@ -8,41 +10,49 @@ use crate::{
 
 pub struct FileUserRepo {
     path: PathBuf,
-    data: Vec<User>,
 }
 
 impl FileUserRepo {
     pub fn new(path: PathBuf) -> AppResult<Self> {
-        let data = FileHelper::load_from_file(&path)?;
-        Ok(Self { path, data })
+        if !path.exists() {
+            FileHelper::save_to_file(&path, &Vec::<User>::new())?;
+        }
+        Ok(Self { path })
     }
 
-    pub fn persist(&self) -> AppResult<()> {
-        FileHelper::save_to_file(&self.path, &self.data)
+    fn read_all(&self) -> AppResult<Vec<User>> {
+        FileHelper::load_from_file(&self.path)
+    }
+
+    fn write_all(&self, users: &Vec<User>) -> AppResult<()> {
+        FileHelper::save_to_file(&self.path, users)
     }
 }
 
 impl UserRepository for FileUserRepo {
-    fn list(&self) -> Vec<User> {
-        self.data.clone()
+    fn list(&self) -> AppResult<Vec<User>> {
+        let all = self.read_all()?;
+        Ok(all)
     }
 
-    fn get(&self, id: uuid::Uuid) -> Option<User> {
-        self.data.iter().find(|&u| u.id == id).cloned()
+    fn get(&self, id: Uuid) -> AppResult<Option<User>> {
+        let all = self.read_all()?;
+        Ok(all.into_iter().find(|u| u.id == id))
     }
 
-    fn save(&mut self, user: User) -> AppResult<()> {
-        if let Some(existing) = self.data.iter_mut().find(|u| u.id == user.id) {
-            *existing = user;
+    fn save(&self, user: &User) -> AppResult<()> {
+        let mut all = self.read_all()?;
+        if let Some(existing) = all.iter_mut().find(|u| u.id == user.id) {
+            *existing = user.clone();
         } else {
-            self.data.push(user);
+            all.push(user.clone());
         }
-
-        self.persist()
+        self.write_all(&all)
     }
 
-    fn delete(&mut self, id: uuid::Uuid) -> AppResult<()> {
-        self.data.retain(|u| u.id != id);
-        self.persist()
+    fn delete(&self, id: Uuid) -> AppResult<()> {
+        let mut all = self.read_all()?;
+        all.retain(|u| u.id != id);
+        self.write_all(&all)
     }
 }
