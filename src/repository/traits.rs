@@ -48,7 +48,7 @@ pub trait AssignmentRepository {
 }
 
 pub trait SuperTransactionRepository {
-    fn list(&self, account_id: Uuid) -> AppResult<Vec<SuperTransaction>>;
+    fn list(&self, budget_id: Uuid) -> AppResult<Vec<SuperTransaction>>;
     fn get(&self, id: Uuid) -> AppResult<Option<SuperTransaction>>;
     fn save(&self, super_transaction: &SuperTransaction) -> AppResult<()>;
     fn delete(&self, id: Uuid) -> AppResult<()>;

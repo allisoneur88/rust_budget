@@ -1,5 +1,7 @@
 use std::path::PathBuf;
 
+use uuid::Uuid;
+
 use crate::{
     Budget, SuperTransaction,
     repository::{file::file_helper::FileHelper, traits::SuperTransactionRepository},
@@ -8,49 +10,52 @@ use crate::{
 
 pub struct FileSuperTransactionRepo {
     path: PathBuf,
-    data: Vec<SuperTransaction>,
 }
 
 impl FileSuperTransactionRepo {
     pub fn new(path: PathBuf) -> AppResult<Self> {
-        let data = FileHelper::load_from_file(&path)?;
-        Ok(Self { path, data })
+        if !path.exists() {
+            FileHelper::save_to_file(&path, &Vec::<SuperTransaction>::new())?;
+        }
+        Ok(Self { path })
     }
 
-    pub fn persist(&self) -> AppResult<()> {
-        FileHelper::save_to_file(&self.path, &self.data)
+    fn read_all(&self) -> AppResult<Vec<SuperTransaction>> {
+        FileHelper::load_from_file(&self.path)
+    }
+
+    fn write_all(&self, super_transactions: &Vec<SuperTransaction>) -> AppResult<()> {
+        FileHelper::save_to_file(&self.path, super_transactions)
     }
 }
 
 impl SuperTransactionRepository for FileSuperTransactionRepo {
-    fn list(&self, budget: &Budget) -> Vec<SuperTransaction> {
-        let mut data = self.data.clone();
-        data.retain(|st| st.budget_id == budget.id);
-        data
+    fn list(&self, budget_id: Uuid) -> AppResult<Vec<SuperTransaction>> {
+        let all = self.read_all()?;
+        Ok(all
+            .into_iter()
+            .filter(|st| st.budget_id == budget_id)
+            .collect())
     }
 
-    fn get(&self, budget: &Budget, id: uuid::Uuid) -> Option<SuperTransaction> {
-        let mut data = self.data.clone();
-        data.retain(|st| st.budget_id == budget.id);
-        data.iter().find(|&st| st.id == id).cloned()
+    fn get(&self, id: Uuid) -> AppResult<Option<SuperTransaction>> {
+        let all = self.read_all()?;
+        Ok(all.into_iter().find(|st| st.id == id))
     }
 
-    fn save(&mut self, super_transaction: SuperTransaction) -> AppResult<()> {
-        if let Some(existing) = self
-            .data
-            .iter_mut()
-            .find(|st| st.id == super_transaction.id)
-        {
-            *existing = super_transaction;
+    fn save(&self, super_transaction: &SuperTransaction) -> AppResult<()> {
+        let mut all = self.read_all()?;
+        if let Some(existing) = all.iter_mut().find(|st| st.id == super_transaction.id) {
+            *existing = super_transaction.clone();
         } else {
-            self.data.push(super_transaction);
+            all.push(super_transaction.clone());
         }
-
-        self.persist()
+        self.write_all(&all)
     }
 
-    fn delete(&mut self, id: uuid::Uuid) -> AppResult<()> {
-        self.data.retain(|st| st.id != id);
-        self.persist()
+    fn delete(&self, id: Uuid) -> AppResult<()> {
+        let mut all = self.read_all()?;
+        all.retain(|st| st.id != id);
+        self.write_all(&all)
     }
 }
