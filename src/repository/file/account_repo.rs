@@ -1,5 +1,7 @@
 use std::path::PathBuf;
 
+use uuid::Uuid;
+
 use crate::{
     Account, Budget,
     repository::{file::file_helper::FileHelper, traits::AccountRepository},
@@ -8,45 +10,53 @@ use crate::{
 
 pub struct FileAccountRepo {
     path: PathBuf,
-    data: Vec<Account>,
 }
 
 impl FileAccountRepo {
     pub fn new(path: PathBuf) -> AppResult<Self> {
-        let data = FileHelper::load_from_file(&path)?;
-        Ok(Self { path, data })
+        if !path.exists() {
+            FileHelper::save_to_file(&path, &Vec::<Account>::new())?;
+        }
+        Ok(Self { path })
     }
 
-    pub fn persist(&self) -> AppResult<()> {
-        FileHelper::save_to_file(&self.path, &self.data)
+    fn read_all(&self) -> AppResult<Vec<Account>> {
+        FileHelper::load_from_file(&self.path)
+    }
+
+    fn write_all(&self, accounts: &Vec<Account>) -> AppResult<()> {
+        FileHelper::save_to_file(&self.path, accounts)
     }
 }
 
 impl AccountRepository for FileAccountRepo {
-    fn list(&self, budget: &Budget) -> Vec<Account> {
-        let mut data = self.data.clone();
-        data.retain(|a| a.budget_id == budget.id);
-        data
+    fn list(&self, budget_id: Uuid) -> AppResult<Vec<Account>> {
+        let all = self.read_all()?;
+        Ok(all
+            .into_iter()
+            .filter(|a| a.budget_id == budget_id)
+            .collect())
     }
 
-    fn get(&self, budget: &Budget, id: uuid::Uuid) -> Option<Account> {
-        let mut data = self.data.clone();
-        data.retain(|a| a.budget_id == budget.id);
-        data.iter().find(|&a| a.id == id).cloned()
+    fn get(&self, id: Uuid) -> AppResult<Option<Account>> {
+        let all = self.read_all()?;
+        Ok(all.into_iter().find(|a| a.id == id))
     }
 
-    fn save(&mut self, account: Account) -> AppResult<()> {
-        if let Some(existing) = self.data.iter_mut().find(|a| a.id == account.id) {
-            *existing = account;
+    fn save(&self, account: &Account) -> AppResult<()> {
+        let mut all = self.read_all()?;
+        if let Some(existing) = all.iter_mut().find(|a| a.id == account.id) {
+            *existing = account.clone();
         } else {
-            self.data.push(account);
+            all.push(account.clone());
         }
 
-        self.persist()
+        self.write_all(&all)
     }
 
-    fn delete(&mut self, id: uuid::Uuid) -> AppResult<()> {
-        self.data.retain(|a| a.id != id);
-        self.persist()
+    fn delete(&self, id: Uuid) -> AppResult<()> {
+        let mut all = self.read_all()?;
+        all.retain(|a| a.id != id);
+        self.write_all(&all)
     }
 }
