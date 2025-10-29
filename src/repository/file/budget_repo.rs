@@ -1,52 +1,58 @@
 use std::path::PathBuf;
 
+use uuid::Uuid;
+
 use crate::{
-    Budget, User,
+    Budget,
     repository::{file::file_helper::FileHelper, traits::BudgetRepository},
     util::error::AppResult,
 };
 
 pub struct FileBudgetRepo {
     path: PathBuf,
-    data: Vec<Budget>,
 }
 
 impl FileBudgetRepo {
     pub fn new(path: PathBuf) -> AppResult<Self> {
-        let data = FileHelper::load_from_file(&path)?;
-        Ok(Self { path, data })
+        if !path.exists() {
+            FileHelper::save_to_file(&path, &Vec::<Budget>::new())?;
+        }
+        Ok(Self { path })
     }
 
-    pub fn persist(&self) -> AppResult<()> {
-        FileHelper::save_to_file(&self.path, &self.data)
+    fn read_all(&self) -> AppResult<Vec<Budget>> {
+        FileHelper::load_from_file(&self.path)
+    }
+
+    fn write_all(&self, budgets: &Vec<Budget>) -> AppResult<()> {
+        FileHelper::save_to_file(&self.path, budgets)
     }
 }
 
 impl BudgetRepository for FileBudgetRepo {
-    fn list(&self, user: &User) -> Vec<Budget> {
-        let mut data = self.data.clone();
-        data.retain(|b| b.user_id == user.id);
-        data
+    fn list(&self, user_id: Uuid) -> AppResult<Vec<Budget>> {
+        let all = self.read_all()?;
+        Ok(all.into_iter().filter(|b| b.user_id == user_id).collect())
     }
 
-    fn get(&self, user: &User, id: uuid::Uuid) -> Option<Budget> {
-        let mut data = self.data.clone();
-        data.retain(|b| b.user_id == user.id);
-        data.iter().find(|&b| b.id == id).cloned()
+    fn get(&self, id: Uuid) -> AppResult<Option<Budget>> {
+        let all = self.read_all()?;
+        Ok(all.into_iter().find(|b| b.id == id))
     }
 
-    fn save(&mut self, budget: Budget) -> AppResult<()> {
-        if let Some(existing) = self.data.iter_mut().find(|b| b.id == budget.id) {
-            *existing = budget;
+    fn save(&self, budget: &Budget) -> AppResult<()> {
+        let mut all = self.read_all()?;
+        if let Some(existing) = all.iter_mut().find(|b| b.id == budget.id) {
+            *existing = budget.clone();
         } else {
-            self.data.push(budget);
+            all.push(budget.clone());
         }
-
-        self.persist()
+        self.write_all(&all)
     }
 
-    fn delete(&mut self, id: uuid::Uuid) -> AppResult<()> {
-        self.data.retain(|b| b.id != id);
-        self.persist()
+    fn delete(&self, id: Uuid) -> AppResult<()> {
+        let mut all = self.read_all()?;
+        all.retain(|b| b.id != id);
+        self.write_all(&all)
     }
 }
