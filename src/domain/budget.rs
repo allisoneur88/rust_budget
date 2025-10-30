@@ -12,7 +12,7 @@ pub struct Budget {
 }
 
 impl Budget {
-    pub fn new<N: Into<String>>(&self, name: N, main_currency_id: Uuid, user_id: Uuid) -> Budget {
+    pub fn new<N: Into<String>>(name: N, main_currency_id: Uuid, user_id: Uuid) -> Budget {
         Budget {
             id: IdGenerator::new_id(),
             name: name.into(),
