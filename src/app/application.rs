@@ -13,7 +13,7 @@ use crate::{
     util::error::AppResult,
 };
 
-pub struct App {
+pub struct Application {
     pub app_state: AppState,
     repos: Arc<Repositories>,
 
