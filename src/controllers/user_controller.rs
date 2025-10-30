@@ -5,10 +5,7 @@ use uuid::Uuid;
 use crate::{
     User,
     app::repositories::Repositories,
-    util::{
-        error::{AppError, AppResult},
-        validators::username_is_unique,
-    },
+    util::error::{AppError, AppResult},
 };
 
 pub struct UserController {
