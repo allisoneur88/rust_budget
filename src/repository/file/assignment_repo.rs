@@ -1,5 +1,7 @@
 use std::path::PathBuf;
 
+use uuid::Uuid;
+
 use crate::{
     Assignment,
     repository::{file::file_helper::FileHelper, traits::AssignmentRepository},
@@ -8,42 +10,53 @@ use crate::{
 
 pub struct FileAssignmentRepo {
     path: PathBuf,
-    data: Vec<Assignment>,
 }
 
 impl FileAssignmentRepo {
     pub fn new(path: PathBuf) -> AppResult<Self> {
-        let data = FileHelper::load_from_file(&path)?;
-        Ok(Self { path, data })
+        if !path.exists() {
+            FileHelper::save_to_file(&path, &Vec::<Assignment>::new())?;
+        }
+        Ok(Self { path })
     }
 
-    pub fn persist(&self) -> AppResult<()> {
-        FileHelper::save_to_file(&self.path, &self.data)
+    fn read_all(&self) -> AppResult<Vec<Assignment>> {
+        FileHelper::load_from_file(&self.path)
+    }
+
+    fn write_all(&self, assignments: &Vec<Assignment>) -> AppResult<()> {
+        FileHelper::save_to_file(&self.path, assignments)
     }
 }
 
 impl AssignmentRepository for FileAssignmentRepo {
-    fn list(&self) -> Vec<Assignment> {
-        self.data.clone()
+    fn list(&self, category_id: Uuid) -> AppResult<Vec<Assignment>> {
+        let all = self.read_all()?;
+        Ok(all
+            .into_iter()
+            .filter(|a| a.category_id == category_id)
+            .collect())
     }
 
-    fn get(&self, id: uuid::Uuid) -> Option<Assignment> {
-        self.data.iter().find(|&a| a.id == id).cloned()
+    fn get(&self, id: Uuid) -> AppResult<Option<Assignment>> {
+        let all = self.read_all()?;
+        Ok(all.into_iter().find(|a| a.id == id))
     }
 
-    fn save(&mut self, assignment: Assignment) -> AppResult<()> {
-        if let Some(existing) = self.data.iter_mut().find(|a| a.id == assignment.id) {
-            *existing = assignment;
+    fn save(&self, assignment: &Assignment) -> AppResult<()> {
+        let mut all = self.read_all()?;
+        if let Some(existing) = all.iter_mut().find(|a| a.id == assignment.id) {
+            *existing = assignment.clone();
         } else {
-            self.data.push(assignment);
+            all.push(assignment.clone());
         }
 
-        self.persist()
+        self.write_all(&all)
     }
 
-    fn delete(&mut self, id: uuid::Uuid) -> AppResult<()> {
-        self.data.retain(|a| a.id != id);
-
-        self.persist()
+    fn delete(&self, id: Uuid) -> AppResult<()> {
+        let mut all = self.read_all()?;
+        all.retain(|a| a.id != id);
+        self.write_all(&all)
     }
 }
