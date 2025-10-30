@@ -1,83 +1,94 @@
-use std::{cell::RefCell, rc::Rc};
+use std::sync::Arc;
 
 use uuid::Uuid;
 
 use crate::{
-    Account, AccountType, Currency, app::app_state::AppState,
-    services::account_service::AccountService,
+    Account, AccountType,
+    app::repositories::Repositories,
+    util::error::{AppError, AppResult},
 };
 
 pub struct AccountController {
-    pub account_service: AccountService,
-    pub app_state: Rc<RefCell<AppState>>,
+    pub repos: Arc<Repositories>,
 }
 
 impl AccountController {
-    pub fn new(app_state: Rc<RefCell<AppState>>) -> Self {
-        Self {
-            account_service: AccountService::new(),
-            app_state,
+    pub fn new(repos: Arc<Repositories>) -> Self {
+        Self { repos }
+    }
+
+    pub fn get_all(&self, budget_id: Uuid) -> AppResult<Vec<Account>> {
+        self.repos.accounts.list(budget_id)
+    }
+
+    pub fn get_by_id(&self, id: Uuid) -> AppResult<Option<Account>> {
+        self.repos.accounts.get(id)
+    }
+
+    pub fn create<N: Into<String>>(
+        &self,
+        name: N,
+        is_off_budget: bool,
+        acc_type: AccountType,
+        currency_id: Uuid,
+        budget_id: Uuid,
+    ) -> AppResult<()> {
+        let account = Account::new(name, is_off_budget, acc_type, currency_id, budget_id);
+        self.repos.accounts.save(&account)
+    }
+
+    pub fn rename<N: Into<String>>(&self, id: Uuid, new_name: N) -> AppResult<()> {
+        match self.repos.accounts.get(id)? {
+            Some(mut account) => {
+                account.rename(new_name);
+                self.repos.accounts.save(&account);
+                Ok(())
+            }
+            None => Err(AppError::NotFound {
+                entity: "Account",
+                id: id,
+            }),
         }
     }
 
-    pub fn get_all(&self) -> Vec<Account> {
-        self.app_state
-            .borrow()
-            .accounts
-            .list(self.app_state.borrow().current_budget.as_ref().unwrap())
+    pub fn change_type(&self, id: Uuid, acc_type: AccountType) -> AppResult<()> {
+        match self.repos.accounts.get(id)? {
+            Some(mut account) => {
+                account.change_account_type(acc_type);
+                self.repos.accounts.save(&account);
+                Ok(())
+            }
+            None => Err(AppError::NotFound {
+                entity: "Account",
+                id: id,
+            }),
+        }
     }
 
-    pub fn get_by_id(&self, id: Uuid) -> Option<Account> {
-        self.app_state
-            .borrow()
-            .accounts
-            .get(self.app_state.borrow().current_budget.as_ref().unwrap(), id)
+    pub fn set_off_budget(&self, id: Uuid, value: bool) -> AppResult<()> {
+        match self.repos.accounts.get(id)? {
+            Some(mut account) => {
+                account.set_is_off_budget(value);
+                self.repos.accounts.save(&account);
+                Ok(())
+            }
+            None => Err(AppError::NotFound {
+                entity: "Account",
+                id: id,
+            }),
+        }
     }
 
-    pub fn create(
-        &self,
-        name: &str,
-        is_off_budget: bool,
-        acc_type: AccountType,
-        currency: Currency,
-    ) {
-        let account = self.account_service.make_account(
-            name,
-            is_off_budget,
-            acc_type,
-            currency,
-            self.app_state.borrow().current_budget.as_ref().unwrap(),
-        );
-
-        self.app_state.borrow_mut().accounts.save(account);
-    }
-
-    pub fn rename(&self, id: Uuid, new_name: &str) {
-        let mut account = self.get_by_id(id).unwrap();
-
-        self.account_service.update_name(&mut account, new_name);
-
-        self.app_state.borrow_mut().accounts.save(account);
-    }
-
-    pub fn change_type(&self, id: Uuid, acc_type: AccountType) {
-        let mut account = self.get_by_id(id).unwrap();
-
-        self.account_service
-            .change_account_type(&mut account, acc_type);
-
-        self.app_state.borrow_mut().accounts.save(account);
-    }
-
-    pub fn set_off_budget(&self, id: Uuid, value: bool) {
-        let mut account = self.get_by_id(id).unwrap();
-
-        self.account_service.set_is_off_budget(&mut account, value);
-
-        self.app_state.borrow_mut().accounts.save(account);
-    }
-
-    pub fn delete(&self, id: Uuid) {
-        self.app_state.borrow_mut().accounts.delete(id);
+    pub fn delete(&self, id: Uuid) -> AppResult<()> {
+        match self.repos.accounts.get(id)? {
+            Some(account) => {
+                self.repos.accounts.delete(account.id);
+                Ok(())
+            }
+            None => Err(AppError::NotFound {
+                entity: "Account",
+                id: id,
+            }),
+        }
     }
 }
