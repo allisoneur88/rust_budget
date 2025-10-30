@@ -1,5 +1,7 @@
 use std::path::PathBuf;
 
+use uuid::Uuid;
+
 use crate::{
     Transaction,
     repository::{file::file_helper::FileHelper, traits::TransactionRepository},
@@ -8,41 +10,52 @@ use crate::{
 
 pub struct FileTransactionRepo {
     path: PathBuf,
-    data: Vec<Transaction>,
 }
 
 impl FileTransactionRepo {
     pub fn new(path: PathBuf) -> AppResult<Self> {
-        let data = FileHelper::load_from_file(&path)?;
-        Ok(Self { path, data })
+        if !path.exists() {
+            FileHelper::save_to_file(&path, &Vec::<Transaction>::new())?;
+        }
+        Ok(Self { path })
     }
 
-    pub fn persist(&self) -> AppResult<()> {
-        FileHelper::save_to_file(&self.path, &self.data)
+    fn read_all(&self) -> AppResult<Vec<Transaction>> {
+        FileHelper::load_from_file(&self.path)
+    }
+
+    fn write_all(&self, transactions: &Vec<Transaction>) -> AppResult<()> {
+        FileHelper::save_to_file(&self.path, transactions)
     }
 }
 
 impl TransactionRepository for FileTransactionRepo {
-    fn list(&self) -> Vec<Transaction> {
-        self.data.clone()
+    fn list(&self, super_transaction_id: Uuid) -> AppResult<Vec<Transaction>> {
+        let all = self.read_all()?;
+        Ok(all
+            .into_iter()
+            .filter(|t| t.super_transaction_id == super_transaction_id)
+            .collect())
     }
 
-    fn get(&self, id: uuid::Uuid) -> Option<Transaction> {
-        self.data.iter().find(|&t| t.id == id).cloned()
+    fn get(&self, id: Uuid) -> AppResult<Option<Transaction>> {
+        let all = self.read_all()?;
+        Ok(all.into_iter().find(|t| t.id == id))
     }
 
-    fn save(&mut self, transaction: Transaction) -> AppResult<()> {
-        if let Some(existing) = self.data.iter_mut().find(|t| t.id == transaction.id) {
-            *existing = transaction;
+    fn save(&self, transaction: &Transaction) -> AppResult<()> {
+        let mut all = self.read_all()?;
+        if let Some(existing) = all.iter_mut().find(|t| t.id == transaction.id) {
+            *existing = transaction.clone();
         } else {
-            self.data.push(transaction);
+            all.push(transaction.clone());
         }
-
-        self.persist()
+        self.write_all(&all)
     }
 
-    fn delete(&mut self, id: uuid::Uuid) -> AppResult<()> {
-        self.data.retain(|t| t.id != id);
-        self.persist()
+    fn delete(&self, id: Uuid) -> AppResult<()> {
+        let mut all = self.read_all()?;
+        all.retain(|t| t.id != id);
+        self.write_all(&all)
     }
 }
