@@ -1,27 +1,41 @@
 use std::io;
 
+use uuid::Uuid;
+
 #[derive(Debug, thiserror::Error)]
 pub enum AppError {
-    #[error("I/O error: {0}")]
-    Io(#[from] io::Error),
+    #[error("Not found: {entity} with id {id:?}")]
+    NotFound { entity: &'static str, id: Uuid },
 
-    #[error("Serialization error: {0}")]
-    Serde(#[from] serde_json::Error),
+    #[error("User not logged in")]
+    NotLoggedIn,
 
-    #[error("Not found: {entity} with id {id}")]
-    NotFound {
-        entity: &'static str,
-        id: uuid::Uuid,
-    },
+    #[error("No budget selected")]
+    NoBudgetSelected,
 
-    #[error("Invalid input: {0}")]
-    Validation(String),
+    #[error("No account selected")]
+    NoAccountSelected,
 
-    #[error("User with this name already exists:{0}")]
+    #[error("User already exists: {0}")]
     UserExists(String),
 
-    #[error("Unknown error: {0}")]
-    Other(String),
+    #[error("Access forbidden")]
+    Forbidden,
+
+    #[error("Validation error: {0}")]
+    Validation(String),
+
+    #[error("Internal error: {0}")]
+    Internal(String),
+
+    #[error(transparent)]
+    Io(#[from] std::io::Error),
+
+    #[error(transparent)]
+    Json(#[from] serde_json::Error),
+
+    #[error(transparent)]
+    Config(#[from] toml::de::Error),
 }
 
 pub type AppResult<T> = Result<T, AppError>;
