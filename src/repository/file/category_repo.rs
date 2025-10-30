@@ -1,5 +1,7 @@
 use std::path::PathBuf;
 
+use uuid::Uuid;
+
 use crate::{
     Category,
     repository::{file::file_helper::FileHelper, traits::CategoryRepository},
@@ -8,41 +10,52 @@ use crate::{
 
 pub struct FileCategoryRepo {
     path: PathBuf,
-    data: Vec<Category>,
 }
 
 impl FileCategoryRepo {
     pub fn new(path: PathBuf) -> AppResult<Self> {
-        let data = FileHelper::load_from_file(&path)?;
-        Ok(Self { path, data })
+        if !path.exists() {
+            FileHelper::save_to_file(&path, &Vec::<Category>::new())?;
+        }
+        Ok(Self { path })
     }
 
-    pub fn persist(&self) -> AppResult<()> {
-        FileHelper::save_to_file(&self.path, &self.data)
+    fn read_all(&self) -> AppResult<Vec<Category>> {
+        FileHelper::load_from_file(&self.path)
+    }
+
+    fn write_all(&self, categories: &Vec<Category>) -> AppResult<()> {
+        FileHelper::save_to_file(&self.path, categories)
     }
 }
 
 impl CategoryRepository for FileCategoryRepo {
-    fn list(&self) -> Vec<Category> {
-        self.data.clone()
+    fn list(&self, super_category_id: Uuid) -> AppResult<Vec<Category>> {
+        let all = self.read_all()?;
+        Ok(all
+            .into_iter()
+            .filter(|c| c.super_category_id == super_category_id)
+            .collect())
     }
 
-    fn get(&self, id: uuid::Uuid) -> Option<Category> {
-        self.data.iter().find(|&c| c.id == id).cloned()
+    fn get(&self, id: Uuid) -> AppResult<Option<Category>> {
+        let all = self.read_all()?;
+        Ok(all.into_iter().find(|c| c.id == id))
     }
 
-    fn save(&mut self, category: Category) -> AppResult<()> {
-        if let Some(existing) = self.data.iter_mut().find(|c| c.id == category.id) {
-            *existing = category;
+    fn save(&self, category: &Category) -> AppResult<()> {
+        let mut all = self.read_all()?;
+        if let Some(existing) = all.iter_mut().find(|c| c.id == category.id) {
+            *existing = category.clone();
         } else {
-            self.data.push(category);
+            all.push(category.clone());
         }
-
-        self.persist()
+        self.write_all(&all)
     }
 
-    fn delete(&mut self, id: uuid::Uuid) -> AppResult<()> {
-        self.data.retain(|c| c.id != id);
-        self.persist()
+    fn delete(&self, id: Uuid) -> AppResult<()> {
+        let mut all = self.read_all()?;
+        all.retain(|c| c.id != id);
+        self.write_all(&all)
     }
 }
