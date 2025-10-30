@@ -1,10 +1,10 @@
-use std::{cell::RefCell, rc::Rc};
+use std::sync::Arc;
 
 use uuid::Uuid;
 
 use crate::{
-    User, UserService,
-    app::app_state::AppState,
+    User,
+    app::repositories::Repositories,
     util::{
         error::{AppError, AppResult},
         validators::username_is_unique,
@@ -12,66 +12,73 @@ use crate::{
 };
 
 pub struct UserController {
-    user_service: UserService,
-    app_state: Rc<RefCell<AppState>>,
+    repos: Arc<Repositories>,
 }
 
 impl UserController {
-    pub fn new(app_state: Rc<RefCell<AppState>>) -> Self {
-        Self {
-            user_service: UserService::new(),
-            app_state,
-        }
+    pub fn new(repos: Arc<Repositories>) -> Self {
+        Self { repos }
     }
 
     pub fn get_all(&self) -> AppResult<Vec<User>> {
-        let state = self.app_state.borrow();
-        Ok(state.users.list())
+        self.repos.users.list()
     }
 
-    pub fn get_by_id(&self, id: Uuid) -> AppResult<User> {
-        let state = self.app_state.borrow();
-        let user = state
-            .users
-            .get(id)
-            .ok_or(AppError::NotFound { entity: "User", id })?;
-        drop(state);
-        Ok(user)
+    pub fn get_by_id(&self, id: Uuid) -> AppResult<Option<User>> {
+        self.repos.users.get(id)
     }
 
-    pub fn create(&mut self, name: &str, password: Option<&str>) -> AppResult<()> {
-        let state = self.app_state.borrow();
-        username_is_unique(&state, name)?;
-        drop(state);
-        let user = match password {
-            Some(p) => self.user_service.make_user(name, p),
-            None => self.user_service.make_user_wo_password(name),
-        };
-        self.app_state.borrow_mut().users.save(user)
-    }
-    pub fn create_with_password(&mut self, name: &str, password: &str) -> AppResult<()> {
-        self.create(name, Some(password))
+    pub fn create<N: Into<String>, P: Into<String>>(
+        &self,
+        name: N,
+        password: Option<P>,
+    ) -> AppResult<()> {
+        let user = User::new(name, password);
+        self.repos.users.save(&user)
     }
 
-    pub fn create_without_password(&mut self, name: &str) -> AppResult<()> {
-        self.create(name, None)
+    pub fn update_name<N: Into<String>>(&self, user_id: Uuid, new_name: N) -> AppResult<()> {
+        match self.repos.users.get(user_id)? {
+            Some(mut user) => {
+                user.update_name(new_name);
+                self.repos.users.save(&user)?;
+                Ok(())
+            }
+            None => Err(AppError::NotFound {
+                entity: "User",
+                id: user_id,
+            }),
+        }
     }
 
-    pub fn update_name(&mut self, user: User, new_name: &str) -> AppResult<()> {
-        let mut user = self.app_state.borrow().users.get(user.id).unwrap();
-        self.user_service.update_user_name(&mut user, new_name);
-        self.app_state.borrow_mut().users.save(user)
+    pub fn update_password<P: Into<String>>(
+        &mut self,
+        user_id: Uuid,
+        new_password: P,
+    ) -> AppResult<()> {
+        match self.repos.users.get(user_id)? {
+            Some(mut user) => {
+                user.update_password(new_password);
+                self.repos.users.save(&user)?;
+                Ok(())
+            }
+            None => Err(AppError::NotFound {
+                entity: "User",
+                id: user_id,
+            }),
+        }
     }
 
-    pub fn update_password(&mut self, user: User, new_password: &str) -> AppResult<()> {
-        let mut user = self.app_state.borrow().users.get(user.id).unwrap();
-        self.user_service
-            .update_user_password(&mut user, new_password);
-        self.app_state.borrow_mut().users.save(user)
-    }
-
-    pub fn delete(&mut self, user: User) -> AppResult<()> {
-        let user = self.app_state.borrow().users.get(user.id).unwrap();
-        self.app_state.borrow_mut().users.delete(user.id)
+    pub fn delete(&mut self, user_id: Uuid) -> AppResult<()> {
+        match self.repos.users.get(user_id)? {
+            Some(user) => {
+                self.repos.users.delete(user.id)?;
+                Ok(())
+            }
+            None => Err(AppError::NotFound {
+                entity: "User",
+                id: user_id,
+            }),
+        }
     }
 }

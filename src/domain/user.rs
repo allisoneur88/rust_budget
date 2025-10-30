@@ -11,7 +11,7 @@ pub struct User {
 }
 
 impl User {
-    fn new<N: Into<String>, P: Into<String>>(name: N, password: Option<P>) -> Self {
+    pub fn new<N: Into<String>, P: Into<String>>(name: N, password: Option<P>) -> Self {
         Self {
             id: IdGenerator::new_id(),
             name: name.into(),
@@ -31,7 +31,7 @@ impl User {
         self.name = new_name.into();
     }
 
-    pub fn update_user_password<P: Into<String>>(&mut self, new_password: P) {
+    pub fn update_password<P: Into<String>>(&mut self, new_password: P) {
         self.password = Some(new_password.into());
     }
 }
