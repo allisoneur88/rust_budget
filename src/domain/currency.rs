@@ -7,4 +7,6 @@ pub struct Currency {
     pub code: String,
     pub symbol: String,
     pub name: String,
+
+    pub user_id: Uuid,
 }

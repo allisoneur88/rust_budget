@@ -69,7 +69,7 @@ pub trait PayeeRepository {
 }
 
 pub trait CurrencyRepository {
-    fn list(&self, budget_id: Uuid) -> AppResult<Vec<Currency>>;
+    fn list(&self, user_id: Uuid) -> AppResult<Vec<Currency>>;
     fn get(&self, id: Uuid) -> AppResult<Option<Currency>>;
     fn save(&self, currency: &Currency) -> AppResult<()>;
     fn delete(&self, id: Uuid) -> AppResult<()>;
