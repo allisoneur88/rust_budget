@@ -6,4 +6,6 @@ pub struct Payee {
     pub id: Uuid,
     pub name: String,
     pub memo: String,
+
+    pub budget_id: Uuid,
 }
