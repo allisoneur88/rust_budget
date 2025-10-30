@@ -1,7 +1,7 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{cell::RefCell, rc::Rc, sync::Arc};
 
 use crate::{
-    app::app_state::AppState,
+    app::{app_state::AppState, repositories::Repositories},
     controllers::{
         account_controller::AccountController, assignment_controller::AssignmentController,
         budget_controller::BudgetController, category_controller::CategoryController,
@@ -14,7 +14,9 @@ use crate::{
 };
 
 pub struct App {
-    pub app_state: Rc<RefCell<AppState>>,
+    pub app_state: AppState,
+    repos: Arc<Repositories>,
+
     pub users: UserController,
     pub budgets: BudgetController,
     pub super_transactions: SuperTransactionController,
