@@ -8,6 +8,7 @@ use crate::{
 pub trait UserRepository {
     fn list(&self) -> AppResult<Vec<User>>;
     fn get(&self, id: Uuid) -> AppResult<Option<User>>;
+    fn get_by_name(&self, name: &str) -> AppResult<Option<User>>;
     fn save(&self, user: &User) -> AppResult<()>;
     fn delete(&self, id: Uuid) -> AppResult<()>;
 }

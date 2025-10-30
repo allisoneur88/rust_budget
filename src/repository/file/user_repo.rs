@@ -40,6 +40,11 @@ impl UserRepository for FileUserRepo {
         Ok(all.into_iter().find(|u| u.id == id))
     }
 
+    fn get_by_name(&self, name: &str) -> AppResult<Option<User>> {
+        let all = self.read_all()?;
+        Ok(all.into_iter().find(|u| u.name == name.to_string()))
+    }
+
     fn save(&self, user: &User) -> AppResult<()> {
         let mut all = self.read_all()?;
         if let Some(existing) = all.iter_mut().find(|u| u.id == user.id) {
