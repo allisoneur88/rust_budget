@@ -1,64 +1,50 @@
-use std::{cell::RefCell, rc::Rc};
+use std::sync::Arc;
 
 use uuid::Uuid;
 
 use crate::{
-    SuperCategory, app::app_state::AppState, services::super_category_service::SuperCategoryService,
+    SuperCategory,
+    app::repositories::Repositories,
+    util::error::{AppError, AppResult},
 };
 
 pub struct SuperCategoryController {
-    pub super_category_service: SuperCategoryService,
-    pub app_state: Rc<RefCell<AppState>>,
+    pub repos: Arc<Repositories>,
 }
 
 impl SuperCategoryController {
-    pub fn new(app_state: Rc<RefCell<AppState>>) -> Self {
-        Self {
-            super_category_service: SuperCategoryService::new(),
-            app_state,
-        }
+    pub fn new(repos: Arc<Repositories>) -> Self {
+        Self { repos }
     }
 
-    pub fn get_all(&self) -> Vec<SuperCategory> {
-        self.app_state
-            .borrow()
+    pub fn get_all(&self, budget_id: Uuid) -> AppResult<Vec<SuperCategory>> {
+        self.repos.super_categories.list(budget_id)
+    }
+
+    pub fn get_by_id(&self, id: Uuid) -> AppResult<SuperCategory> {
+        self.repos
             .super_categories
-            .list(self.app_state.borrow().current_budget.as_ref().unwrap())
+            .get(id)?
+            .ok_or_else(|| AppError::NotFound {
+                entity: "Super Category",
+                id: id,
+            })
     }
 
-    pub fn get_by_id(&self, id: Uuid) -> Option<SuperCategory> {
-        self.app_state
-            .borrow()
-            .super_categories
-            .as_ref()
-            .get(self.app_state.borrow().current_budget.as_ref().unwrap(), id)
+    pub fn create<N: Into<String>>(&self, name: N, budget_id: Uuid) -> AppResult<()> {
+        let super_category = SuperCategory::new(name, budget_id);
+        self.repos.super_categories.save(&super_category)?;
+        Ok(())
     }
 
-    pub fn create(&self, name: &str) {
-        let super_category = self.super_category_service.make_super_category(
-            name,
-            self.app_state.borrow().current_budget.as_ref().unwrap(),
-        );
-
-        self.app_state
-            .borrow_mut()
-            .super_categories
-            .save(super_category);
+    pub fn rename<N: Into<String>>(&self, id: Uuid, new_name: N) -> AppResult<()> {
+        let mut super_category = self.get_by_id(id)?;
+        super_category.rename(new_name);
+        self.repos.super_categories.save(&super_category)?;
+        Ok(())
     }
 
-    pub fn rename(&self, id: Uuid, new_name: &str) {
-        let mut super_category = self.get_by_id(id).unwrap();
-
-        self.super_category_service
-            .update_name(&mut super_category, new_name);
-
-        self.app_state
-            .borrow_mut()
-            .super_categories
-            .save(super_category);
-    }
-
-    pub fn delete(&self, id: Uuid) {
-        self.app_state.borrow_mut().super_categories.delete(id);
+    pub fn delete(&self, id: Uuid) -> AppResult<()> {
+        self.repos.super_categories.delete(id)
     }
 }
