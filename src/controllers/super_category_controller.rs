@@ -9,7 +9,7 @@ use crate::{
 };
 
 pub struct SuperCategoryController {
-    pub repos: Arc<Repositories>,
+    repos: Arc<Repositories>,
 }
 
 impl SuperCategoryController {

@@ -9,7 +9,7 @@ use crate::{
 };
 
 pub struct BudgetController {
-    pub repos: Arc<Repositories>,
+    repos: Arc<Repositories>,
 }
 
 impl BudgetController {

@@ -9,7 +9,7 @@ use crate::{
 };
 
 pub struct AccountController {
-    pub repos: Arc<Repositories>,
+    repos: Arc<Repositories>,
 }
 
 impl AccountController {
