@@ -21,8 +21,14 @@ impl AccountController {
         self.repos.accounts.list(budget_id)
     }
 
-    pub fn get_by_id(&self, id: Uuid) -> AppResult<Option<Account>> {
-        self.repos.accounts.get(id)
+    pub fn get_by_id(&self, id: Uuid) -> AppResult<Account> {
+        self.repos
+            .accounts
+            .get(id)?
+            .ok_or_else(|| AppError::NotFound {
+                entity: "Account",
+                id,
+            })
     }
 
     pub fn create<N: Into<String>>(
@@ -32,63 +38,45 @@ impl AccountController {
         acc_type: AccountType,
         currency_id: Uuid,
         budget_id: Uuid,
-    ) -> AppResult<()> {
+    ) -> AppResult<Account> {
+        self.repos
+            .budgets
+            .get(budget_id)?
+            .ok_or_else(|| AppError::NotFound {
+                entity: "Budget",
+                id: budget_id,
+            })?;
+        self.repos
+            .currencies
+            .get(currency_id)?
+            .ok_or_else(|| AppError::NotFound {
+                entity: "Currency",
+                id: currency_id,
+            })?;
         let account = Account::new(name, is_off_budget, acc_type, currency_id, budget_id);
-        self.repos.accounts.save(&account)
+        self.repos.accounts.save(&account)?;
+        Ok(account)
     }
 
     pub fn rename<N: Into<String>>(&self, id: Uuid, new_name: N) -> AppResult<()> {
-        match self.repos.accounts.get(id)? {
-            Some(mut account) => {
-                account.rename(new_name);
-                self.repos.accounts.save(&account);
-                Ok(())
-            }
-            None => Err(AppError::NotFound {
-                entity: "Account",
-                id: id,
-            }),
-        }
+        let mut account = self.get_by_id(id)?;
+        account.rename(new_name);
+        self.repos.accounts.save(&account)
     }
 
     pub fn change_type(&self, id: Uuid, acc_type: AccountType) -> AppResult<()> {
-        match self.repos.accounts.get(id)? {
-            Some(mut account) => {
-                account.change_account_type(acc_type);
-                self.repos.accounts.save(&account);
-                Ok(())
-            }
-            None => Err(AppError::NotFound {
-                entity: "Account",
-                id: id,
-            }),
-        }
+        let mut account = self.get_by_id(id)?;
+        account.change_account_type(acc_type);
+        self.repos.accounts.save(&account)
     }
 
     pub fn set_off_budget(&self, id: Uuid, value: bool) -> AppResult<()> {
-        match self.repos.accounts.get(id)? {
-            Some(mut account) => {
-                account.set_is_off_budget(value);
-                self.repos.accounts.save(&account);
-                Ok(())
-            }
-            None => Err(AppError::NotFound {
-                entity: "Account",
-                id: id,
-            }),
-        }
+        let mut account = self.get_by_id(id)?;
+        account.set_is_off_budget(value);
+        self.repos.accounts.save(&account)
     }
 
     pub fn delete(&self, id: Uuid) -> AppResult<()> {
-        match self.repos.accounts.get(id)? {
-            Some(account) => {
-                self.repos.accounts.delete(account.id);
-                Ok(())
-            }
-            None => Err(AppError::NotFound {
-                entity: "Account",
-                id: id,
-            }),
-        }
+        self.repos.accounts.delete(id)
     }
 }
