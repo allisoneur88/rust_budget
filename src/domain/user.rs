@@ -27,7 +27,7 @@ impl User {
         Self::new::<N, String>(name, None)
     }
 
-    pub fn update_name<N: Into<String>>(&mut self, new_name: N) {
+    pub fn rename<N: Into<String>>(&mut self, new_name: N) {
         self.name = new_name.into();
     }
 
