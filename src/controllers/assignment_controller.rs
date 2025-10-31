@@ -1,17 +1,13 @@
-use std::{cell::RefCell, rc::Rc};
+use std::sync::Arc;
 
-use crate::{app::app_state::AppState, services::assignment_service::AssignmentService};
+use crate::app::repositories::Repositories;
 
 pub struct AssignmentController {
-    pub assignment_service: AssignmentService,
-    pub app_state: Rc<RefCell<AppState>>,
+    repos: Arc<Repositories>,
 }
 
 impl AssignmentController {
-    pub fn new(app_state: Rc<RefCell<AppState>>) -> Self {
-        Self {
-            assignment_service: AssignmentService::new(),
-            app_state,
-        }
+    pub fn new(repos: Arc<Repositories>) -> Self {
+        Self { repos }
     }
 }
