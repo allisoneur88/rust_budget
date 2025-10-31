@@ -3,7 +3,7 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::{
-    Budget, User,
+    User,
     app::repositories::Repositories,
     util::error::{AppError, AppResult},
 };

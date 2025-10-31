@@ -1,4 +1,4 @@
-use std::{cell::RefCell, rc::Rc, sync::Arc};
+use std::sync::Arc;
 
 use uuid::Uuid;
 
@@ -21,8 +21,14 @@ impl BudgetController {
         self.repos.budgets.list(user_id)
     }
 
-    pub fn get_by_id(&self, id: Uuid) -> AppResult<Option<Budget>> {
-        self.repos.budgets.get(id)
+    pub fn get_by_id(&self, id: Uuid) -> AppResult<Budget> {
+        self.repos
+            .budgets
+            .get(id)?
+            .ok_or_else(|| AppError::NotFound {
+                entity: "Budget",
+                id,
+            })
     }
 
     pub fn create<N: Into<String>>(
@@ -30,49 +36,40 @@ impl BudgetController {
         name: N,
         main_currency_id: Uuid,
         user_id: Uuid,
-    ) -> AppResult<()> {
+    ) -> AppResult<Budget> {
+        self.repos
+            .currencies
+            .get(main_currency_id)?
+            .ok_or_else(|| AppError::NotFound {
+                entity: "Currency",
+                id: main_currency_id,
+            })?;
+
         let budget = Budget::new(name, main_currency_id, user_id);
-        self.repos.budgets.save(&budget)
+        self.repos.budgets.save(&budget)?;
+        Ok(budget)
     }
 
     pub fn rename<N: Into<String>>(&self, id: Uuid, new_name: N) -> AppResult<()> {
-        match self.repos.budgets.get(id)? {
-            Some(mut budget) => {
-                budget.rename(new_name);
-                self.repos.budgets.save(&budget)?;
-                Ok(())
-            }
-            None => Err(AppError::NotFound {
-                entity: "Budget",
-                id: id,
-            }),
-        }
+        let mut budget = self.get_by_id(id)?;
+        budget.rename(new_name);
+        self.repos.budgets.save(&budget)
     }
 
     pub fn change_currency(&self, id: Uuid, new_currency_id: Uuid) -> AppResult<()> {
-        match self.repos.budgets.get(id)? {
-            Some(mut budget) => {
-                budget.change_currency(new_currency_id);
-                self.repos.budgets.save(&budget)?;
-                Ok(())
-            }
-            None => Err(AppError::NotFound {
-                entity: "Budget",
-                id: id,
-            }),
-        }
+        let mut budget = self.get_by_id(id)?;
+        self.repos
+            .currencies
+            .get(new_currency_id)?
+            .ok_or_else(|| AppError::NotFound {
+                entity: "Currency",
+                id: new_currency_id,
+            })?;
+        budget.change_currency(new_currency_id);
+        self.repos.budgets.save(&budget)
     }
 
     pub fn delete(&self, id: Uuid) -> AppResult<()> {
-        match self.repos.budgets.get(id)? {
-            Some(budget) => {
-                self.repos.budgets.delete(budget.id)?;
-                Ok(())
-            }
-            None => Err(AppError::NotFound {
-                entity: "Budget",
-                id: id,
-            }),
-        }
+        self.repos.budgets.delete(id)
     }
 }
