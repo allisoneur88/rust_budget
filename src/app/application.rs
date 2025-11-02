@@ -1,7 +1,7 @@
 use std::{cell::RefCell, rc::Rc, sync::Arc};
 
 use crate::{
-    app::{app_state::AppState, repositories::Repositories},
+    app::{app_config::AppConfig, app_state::AppState, repositories::Repositories},
     controllers::{
         account_controller::AccountController, assignment_controller::AssignmentController,
         budget_controller::BudgetController, category_controller::CategoryController,
@@ -29,23 +29,26 @@ pub struct Application {
     pub currencies: CurrencyController,
 }
 
-impl App {
+impl Application {
     pub fn new() -> AppResult<Self> {
-        let app_state = Rc::new(RefCell::new(AppState::new()?));
+        let config = AppConfig::load("config.toml")?;
+        let repos = Arc::new(Repositories::new(&config)?);
+        let app_state = AppState::new();
 
-        let users = UserController::new(app_state.clone());
-        let budgets = BudgetController::new(app_state.clone());
-        let super_transactions = SuperTransactionController::new(app_state.clone());
-        let super_categories = SuperCategoryController::new(app_state.clone());
-        let accounts = AccountController::new(app_state.clone());
-        let transactions = TransactionController::new(app_state.clone());
-        let categories = CategoryController::new(app_state.clone());
-        let payees = PayeeController::new(app_state.clone());
-        let assignments = AssignmentController::new(app_state.clone());
-        let currencies = CurrencyController::new(app_state.clone());
+        let users = UserController::new(repos.clone());
+        let budgets = BudgetController::new(repos.clone());
+        let super_transactions = SuperTransactionController::new(repos.clone());
+        let super_categories = SuperCategoryController::new(repos.clone());
+        let accounts = AccountController::new(repos.clone());
+        let transactions = TransactionController::new(repos.clone());
+        let categories = CategoryController::new(repos.clone());
+        let payees = PayeeController::new(repos.clone());
+        let assignments = AssignmentController::new(repos.clone());
+        let currencies = CurrencyController::new(repos.clone());
 
         Ok(Self {
             app_state,
+            repos,
             users,
             budgets,
             super_transactions,

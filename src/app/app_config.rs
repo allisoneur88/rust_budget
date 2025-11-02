@@ -2,6 +2,8 @@ use std::{fs, path::PathBuf};
 
 use serde::{Deserialize, Serialize};
 
+use crate::util::error::AppResult;
+
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AppConfig {
     pub user_path: PathBuf,
@@ -17,7 +19,7 @@ pub struct AppConfig {
 }
 
 impl AppConfig {
-    pub fn load(path: &str) -> anyhow::Result<Self> {
+    pub fn load(path: &str) -> AppResult<Self> {
         let contents = fs::read_to_string(path)?;
         let config: AppConfig = toml::from_str(&contents)?;
         Ok(config)
