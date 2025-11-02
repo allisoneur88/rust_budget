@@ -2,7 +2,6 @@ pub mod app;
 pub mod controllers;
 pub mod domain;
 pub mod repository;
-pub mod services;
 pub mod util;
 
 pub use domain::{
@@ -11,5 +10,4 @@ pub use domain::{
     super_transaction::SuperTransaction, transaction::Transaction, user::User,
 };
 
-pub use services::user_service::UserService;
 pub use util::id_generator::IdGenerator;

@@ -8,10 +8,10 @@
 )]
 #![allow(dead_code, unused_variables)]
 
-use budget::{app::app::App, util::error::AppResult};
+use budget::{app::application::Application, util::error::AppResult};
 
 fn main() -> AppResult<()> {
-    let app = App::new()?;
+    let app = Application::new()?;
     let users = app.users.get_all();
     println!("users: {:#?}", users);
     Ok(())
