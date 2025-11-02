@@ -19,7 +19,6 @@ pub struct Transaction {
 
 impl Transaction {
     pub fn new<M: Into<String>>(
-        &self,
         flow: f64,
         memo: M,
         account_id: Uuid,
