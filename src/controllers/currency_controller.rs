@@ -1,17 +1,61 @@
-use std::{cell::RefCell, rc::Rc};
+use std::sync::Arc;
 
-use crate::{app::app_state::AppState, services::currency_service::CurrencyService};
+use uuid::Uuid;
+
+use crate::{
+    Currency,
+    app::repositories::Repositories,
+    util::error::{AppError, AppResult},
+};
 
 pub struct CurrencyController {
-    pub currency_service: CurrencyService,
-    pub app_state: Rc<RefCell<AppState>>,
+    repos: Arc<Repositories>,
 }
 
 impl CurrencyController {
-    pub fn new(app_state: Rc<RefCell<AppState>>) -> Self {
-        Self {
-            currency_service: CurrencyService::new(),
-            app_state,
-        }
+    pub fn new(repos: Arc<Repositories>) -> Self {
+        Self { repos }
+    }
+
+    pub fn get_all(&self, user_id: Uuid) -> AppResult<Vec<Currency>> {
+        self.repos.currencies.list(user_id)
+    }
+
+    pub fn get_by_id(&self, id: Uuid) -> AppResult<Currency> {
+        self.repos
+            .currencies
+            .get(id)?
+            .ok_or_else(|| AppError::NotFound {
+                entity: "Currency",
+                id,
+            })
+    }
+
+    pub fn create<C, S, N>(&self, user_id: Uuid, code: C, symbol: S, name: N) -> AppResult<Currency>
+    where
+        C: Into<String>,
+        S: Into<String>,
+        N: Into<String>,
+    {
+        let currency = Currency::new(user_id, code, symbol, name);
+        self.repos.currencies.save(&currency)?;
+        Ok(currency)
+    }
+
+    pub fn update_currency<C, S, N>(
+        &self,
+        id: Uuid,
+        new_code: C,
+        new_symbol: S,
+        new_name: N,
+    ) -> AppResult<()>
+    where
+        C: Into<String>,
+        S: Into<String>,
+        N: Into<String>,
+    {
+        let mut currency = self.get_by_id(id)?;
+        currency.update_currency(new_code, new_symbol, new_name);
+        self.repos.currencies.save(&currency)
     }
 }
