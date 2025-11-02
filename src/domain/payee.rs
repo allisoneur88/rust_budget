@@ -25,4 +25,8 @@ impl Payee {
     pub fn rename<N: Into<String>>(&mut self, new_name: N) {
         self.name = new_name.into();
     }
+
+    pub fn update_memo<M: Into<String>>(&mut self, new_memo: M) {
+        self.memo = new_memo.into();
+    }
 }
