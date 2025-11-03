@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use uuid::Uuid;
 
 use crate::{
-    Budget, SuperTransaction,
+    SuperTransaction,
     repository::{file::file_helper::FileHelper, traits::SuperTransactionRepository},
     util::error::AppResult,
 };

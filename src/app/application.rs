@@ -1,4 +1,4 @@
-use std::{cell::RefCell, rc::Rc, sync::Arc};
+use std::sync::Arc;
 
 use crate::{
     app::{app_config::AppConfig, app_state::AppState, repositories::Repositories},
@@ -13,6 +13,7 @@ use crate::{
     util::error::AppResult,
 };
 
+#[allow(dead_code)]
 pub struct Application {
     pub app_state: AppState,
     repos: Arc<Repositories>,

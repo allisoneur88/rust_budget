@@ -1,5 +1,3 @@
-use std::io;
-
 use uuid::Uuid;
 
 #[derive(Debug, thiserror::Error)]
