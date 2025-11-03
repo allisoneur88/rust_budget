@@ -27,7 +27,7 @@ impl SuperCategoryController {
             .get(id)?
             .ok_or_else(|| AppError::NotFound {
                 entity: "Super Category",
-                id: id,
+                id,
             })
     }
 
